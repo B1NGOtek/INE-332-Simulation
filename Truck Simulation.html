@@ -1,10 +1,2188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Truck Simulation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems Simulator_IE332_Ege Akınbingöl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" fetchpriority="high">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <style id="dynamic-styles">
+        :root {
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.15);
+            --accent: #0ea5e9;
+            --success: #2dd4bf;
+            --danger: #f43f5e;
+            --warning: #f59e0b;
+            --truck-color: #fb923c;
+            --bg: #050507;
+            --panel: rgba(12, 12, 16, 0.75);
+            --panel-solid: #0c0c10;
+            --glass: rgba(255, 255, 255, 0.03);
+            --text-main: #f0f2f5;
+            --text-muted: #7a8599;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 28px 20px;
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding-bottom: 120px;
+            background-image:
+                radial-gradient(ellipse 800px 400px at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 70%),
+                radial-gradient(circle 600px at 80% 60%, rgba(45, 212, 191, 0.02) 0%, transparent 70%);
+            min-height: 100vh;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #38bdf8 0%, #2dd4bf 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.2));
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-top: 6px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .header-section::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #38bdf8, #2dd4bf);
+            border-radius: 2px;
+            margin: 14px auto 0;
+        }
+
+        /* --- ANALYTICS PANEL --- */
+        .analytics-panel {
+            background: var(--panel);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            padding: 28px 36px;
+            border-radius: var(--radius-lg);
+            margin-top: 28px;
+            width: 100%;
+            max-width: 1200px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            transition: border-color var(--transition);
+            content-visibility: auto;
+            contain-intrinsic-size: auto 400px;
+        }
+
+        .analytics-panel:hover {
+            border-color: var(--border-hover);
+        }
+
+        .analytics-panel h2 {
+            color: var(--primary);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .analytics-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #chart-container {
+            width: 100%;
+            height: 250px;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        /* --- CONFIG PANEL --- */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: var(--panel-solid);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+            contain: content;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            border-radius: 3px 0 0 3px;
+            background: linear-gradient(180deg, var(--primary), var(--success));
+            opacity: 0.7;
+            transition: opacity var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-hover);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card h3 {
+            margin: 0 0 6px 0;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: 0.12em;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.84rem;
+        }
+
+        .input-row label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        select,
+        input {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            color-scheme: dark;
+            accent-color: var(--primary);
+            transition: all var(--transition);
+        }
+
+        input[type="number"] {
+            width: 72px;
+            text-align: center;
+        }
+
+        input:hover,
+        select:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: rgba(56, 189, 248, 0.04);
+        }
+
+        /* --- DASHBOARD --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 28px;
+        }
+
+        .kpi {
+            background: var(--panel-solid);
+            padding: 18px 14px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+            position: relative;
+            overflow: hidden;
+            contain: content;
+        }
+
+        .kpi::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--success);
+            opacity: 0.6;
+        }
+
+        /* Color-coded KPI top bars */
+        .kpi:nth-child(1)::before {
+            background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+        }
+
+        .kpi:nth-child(2)::before {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .kpi:nth-child(3)::before {
+            background: linear-gradient(90deg, #2dd4bf, #5eead4);
+        }
+
+        .kpi:nth-child(4)::before {
+            background: linear-gradient(90deg, #f43f5e, #fb7185);
+        }
+
+        .kpi:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            display: block;
+            color: var(--success);
+            font-variant-numeric: tabular-nums;
+            transition: color 0.3s;
+        }
+
+        /* Color-coded KPI values */
+        .kpi:nth-child(1) .kpi-val {
+            color: #38bdf8;
+        }
+
+        .kpi:nth-child(2) .kpi-val {
+            color: #fbbf24;
+        }
+
+        .kpi:nth-child(3) .kpi-val {
+            color: #2dd4bf;
+        }
+
+        .kpi:nth-child(4) .kpi-val {
+            color: #fb7185;
+        }
+
+        .kpi-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 8px;
+            display: block;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        /* --- SIMULATION VIEW --- */
+        .canvas-container {
+            position: relative;
+            width: 1200px;
+            background: #050810;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(30, 41, 59, 0.6);
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(15, 23, 42, 0.5),
+                0 24px 64px rgba(0, 0, 0, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03),
+                inset 0 0 80px rgba(0, 0, 0, 0.5);
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background-image:
+                radial-gradient(ellipse 600px 300px at 50% 35%, rgba(56, 189, 248, 0.05) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 200px at 75% 60%, rgba(45, 212, 191, 0.03) 0%, transparent 70%),
+                linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            contain: layout style;
+        }
+
+        .path-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            /* Render on top of stations */
+            overflow: visible;
+        }
+
+        @keyframes dash-flow {
+            to {
+                stroke-dashoffset: -24;
+            }
+        }
+
+        .path-flow {
+            stroke-dasharray: 6 6;
+            animation: dash-flow 1s linear infinite;
+        }
+
+        .resource {
+            position: absolute;
+            width: 86px;
+            height: 60px;
+            background: linear-gradient(145deg, #0d1f35 0%, #091929 100%);
+            border: 2px solid rgba(56, 189, 248, 0.7);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.7rem;
+            color: #7dd3fc;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.25), 0 0 40px rgba(56, 189, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            z-index: 2;
+            transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            gap: 3px;
+        }
+
+        .resource::before {
+            content: attr(data-icon);
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .resource.active {
+            border-color: #2dd4bf;
+            box-shadow: 0 0 24px rgba(45, 212, 191, 0.5), 0 0 60px rgba(45, 212, 191, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            color: #2dd4bf;
+        }
+
+        .queue-zone {
+            position: absolute;
+            height: 54px;
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding: 0 10px 6px;
+            color: rgba(56, 189, 248, 0.45);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            z-index: 1;
+            transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .truck {
+            position: absolute;
+            width: 36px;
+            height: 24px;
+            background: linear-gradient(145deg, #fb923c 0%, #ea580c 100%);
+            border-radius: 6px 4px 4px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            font-weight: 900;
+            color: #fff;
+            z-index: 10;
+            margin-left: -18px;
+            margin-top: -12px;
+            box-shadow: 0 3px 10px rgba(251, 146, 60, 0.5), 0 1px 3px rgba(0, 0, 0, 0.6);
+            will-change: transform;
+            text-shadow: 0 0 3px #000, 0 0 5px #000;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .truck::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 7px;
+            height: 14px;
+            background: linear-gradient(145deg, #c2410c, #9a3412);
+            border-radius: 3px 0 0 3px;
+        }
+
+        .truck::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            width: 100%;
+            max-width: 1200px;
+            background: var(--panel-solid);
+            padding: 18px 22px;
+            border-radius: var(--radius-lg);
+            align-items: center;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            contain: layout style;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.15) 100%);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.35);
+        }
+
+        .play-btn:hover::after {
+            opacity: 1;
+        }
+
+        .play-btn:active {
+            transform: translateY(0);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 36px;
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .speed-control-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 200px;
+        }
+
+        .speed-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+        }
+
+        #speed-val-display {
+            color: var(--primary);
+            min-width: 35px;
+            display: inline-block;
+        }
+
+        /* --- EXPORT & HEATMAP BTNS --- */
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            position: relative;
+        }
+
+        .secondary-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform var(--transition);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--primary);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+
+        .secondary-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .secondary-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tooltip */
+        .secondary-btn:hover::after {
+            content: attr(title);
+            position: absolute;
+            top: -38px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #f0f2f5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            border: 1px solid var(--border);
+            font-weight: 500;
+            animation: tooltipFade 0.15s ease-out;
+        }
+
+        @keyframes tooltipFade {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- HEATMAP LAYER --- */
+        .heatmap-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            /* Above paths, below trucks */
+            opacity: 0;
+            transition: opacity 0.4s;
+            mix-blend-mode: screen;
+        }
+
+        .sim-area-heatmap .heatmap-layer {
+            opacity: 1;
+        }
+
+        .hm-blob {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(244, 63, 94, 0.55) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+            box-shadow: 0 0 30px 15px rgba(244, 63, 94, 0.2);
+            pointer-events: none;
+        }
+
+        /* --- CHATBOT --- */
+        .chat-widget {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 360px;
+            background: var(--panel-solid);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
+            z-index: 1000;
+            transition: transform var(--transition), opacity var(--transition);
+        }
+
+        .chat-header {
+            background: rgba(20, 20, 28, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 16px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            color: var(--primary);
+            align-items: center;
+            letter-spacing: 0.01em;
+        }
+
+        .chat-header span::before {
+            content: '⚡';
+            margin-right: 6px;
+        }
+
+        .chat-msgs {
+            height: 200px;
+            overflow-y: auto;
+            padding: 16px;
+            font-size: 0.84rem;
+            background: rgba(5, 5, 8, 0.9);
+            color: #c8d0dc;
+            display: block;
+            scroll-behavior: smooth;
+        }
+
+        .chat-msgs::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-msgs::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-msgs::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .msg {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            line-height: 1.55;
+            font-size: 0.82rem;
+            animation: msgSlideIn 0.25s ease-out;
+        }
+
+        @keyframes msgSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .msg.ai {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .msg.user {
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: #000;
+            text-align: right;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            font-weight: 600;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            background: rgba(15, 15, 20, 0.95);
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px;
+            outline: none;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-input-area input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        /* --- SUMMARY MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: var(--panel-solid);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            text-align: center;
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-content h2 {
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 22px 0;
+            text-align: left;
+        }
+
+        .summary-stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            transition: border-color var(--transition);
+        }
+
+        .summary-stat-box:hover {
+            border-color: var(--border-hover);
+        }
+
+        .summary-stat-box .label {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .summary-stat-box .value {
+            color: var(--success);
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+
+        .modal-close-btn {
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: #000;
+            border: none;
+            padding: 11px 28px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+        }
+
+        .modal-close-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+                padding-bottom: 150px;
+            }
+
+            .analytics-panel {
+                padding: 15px;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            #analytics-results .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi {
+                padding: 12px;
+            }
+
+            .kpi-val {
+                font-size: 1.3rem;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .play-btn {
+                flex: 1 1 100%;
+                padding: 16px;
+                font-size: 1.1rem;
+            }
+
+            .secondary-btn {
+                flex: 1 1 45%;
+                height: 50px;
+            }
+
+            .controls>div {
+                flex: 1 1 100% !important;
+                margin-left: 0 !important;
+                margin-top: 5px;
+            }
+
+            .canvas-container {
+                zoom: calc((100vw - 20px) / 1200);
+                margin: 0 auto;
+            }
+
+            @supports not (zoom: 1) {
+                .canvas-container {
+                    transform: scale(calc((100vw - 20px) / 1200));
+                    transform-origin: top left;
+                }
+            }
+
+            .chat-widget {
+                width: calc(100vw - 20px);
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .log-timestamp {
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .log-action {
+            color: var(--text-main);
+            flex: 1;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Welcome to the Truck Simulation</h1>
-    <p>This is a simulation environment for trucks.</p>
+
+    <input type="file" id="truck-image-upload" accept="image/*" style="display:none">
+
+    <div class="header-section">
+        <h1>Systems Simulator</h1>
+        <div class="subtitle">System Design & Research Lab</div>
+    </div>
+
+    <div class="config-grid">
+        <div class="card">
+            <h3>Fleet Configuration</h3>
+            <div class="input-row">
+                <label>Trucks Count:</label>
+                <input type="number" id="cfg-truck-count" value="6" min="1" max="20">
+            </div>
+            <div class="input-row">
+                <label>Number of Loaders:</label>
+                <input type="number" id="cfg-loader-count" value="2" min="1" max="10">
+            </div>
+            <div class="input-row">
+                <label>Hourly Truck Cost:</label>
+                <input type="number" id="cfg-cost-truck" value="50">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Service Stations</h3>
+            <div class="input-row">
+                <label>Travel Speed (min):</label>
+                <input type="number" id="cfg-travel-base" value="60" min="5">
+            </div>
+            <div class="input-row">
+                <label>Scales (Number):</label>
+                <input type="number" id="cfg-scale-count" value="1" min="1" max="10">
+            </div>
+            <div class="input-row">
+                <label>Shift Duration (hrs):</label>
+                <input type="number" id="cfg-shift-hours" value="8" min="1" max="24">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Operational Logic</h3>
+            <div class="input-row">
+                <label>Distribution:</label>
+                <select id="dist-type">
+                    <option value="fixed">Fixed (Ideal)</option>
+                    <option value="exponential" selected>M/M/s (Stochastic)</option>
+                    <option value="uniform">Uniform Variance</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <label>Station Cost ($/hr):</label>
+                <input type="number" id="cfg-cost-station" value="35">
+            </div>
+            <div class="input-row">
+                <label>Mean Load Time:</label>
+                <input type="number" id="dist-load-avg" value="10">
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="kpi">
+            <span class="kpi-val" id="stat-time">0.0</span>
+            <span class="kpi-label">⏱ Simulation Time</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi-val" id="stat-avg-wait">0.0</span>
+            <span class="kpi-label">⏳ Waiting Trucks (Lq)</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi-val" id="stat-util">0.0%</span>
+            <span class="kpi-label">⚙️ Loader Util (ρ)</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi-val" id="stat-total-cost">$0</span>
+            <span class="kpi-label">💰 Total System Cost</span>
+        </div>
+    </div>
+
+    <div class="canvas-container" id="sim-area">
+        <svg class="path-svg" id="anim-path-svg"></svg>
+        <div class="heatmap-layer" id="heatmap-layer">
+            <!-- Heatmap blobs created dynamically -->
+        </div>
+        <div id="loader-container"></div>
+        <div id="scale-container"></div>
+
+        <div class="queue-zone" id="l-queue-box" style="left: 20px; width: 340px; top: 100px;">Loading Queue</div>
+        <div class="queue-zone" id="s-queue-box" style="left: 560px; width: 340px; top: 100px;">Scale Queue</div>
+    </div>
+
+    <div class="controls">
+        <button class="play-btn" id="btn-play">Run Simulation</button>
+        <button class="secondary-btn" id="btn-export-csv" title="Export to CSV"
+            aria-label="Export simulation data to CSV">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        </button>
+        <button class="secondary-btn" id="btn-toggle-heatmap" title="Toggle Congestion Heatmap"
+            aria-label="Toggle congestion heatmap overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                <path
+                    d="M9.824 14.176C10.5 13.5 11 12 11 12s.5 1.5 1.176 2.176C12.85 14.85 14 15 14 16c0 1.104-.896 2-2 2s-2-.896-2-2c0-1 .5-2 1.343-2.657h-.519z" />
+            </svg>
+        </button>
+        <div style="flex:1; display:flex; align-items:center; gap:15px; margin-left: 10px;">
+            <input type="range" id="time-slider" min="0" step="0.1" value="0" style="width:100%;">
+        </div>
+        <div class="speed-control-container">
+            <span class="speed-label">Velocity</span>
+            <div style="position:relative; flex:1; display:flex; align-items:center; height:20px;">
+                <input type="range" id="speed-slider" min="1" max="20" value="5">
+                <div id="speed-val-display"
+                    style="position:absolute; pointer-events:none; font-size:0.7rem; color:#000; font-weight:900; line-height:1; transform:translate(-50%, -50%); top:50%; text-align:center; vertical-align:middle; display:flex; justify-content:center; align-items:center;">
+                    5x</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Statistical Analysis -->
+    <div class="analytics-panel">
+        <h2>Advanced Statistical Analysis (24-Hour Monte Carlo)</h2>
+        <div class="analytics-controls">
+            <button class="play-btn" id="btn-run-analytics">Run 24h Analysis</button>
+            <span style="color:var(--text-muted); font-size:0.85rem;">Replications: <input type="number"
+                    id="replications" value="30" style="min-width: 60px;"></span>
+        </div>
+
+        <div id="analytics-results" style="display: none;">
+            <div class="dashboard" style="margin-bottom: 0; width: 100%; grid-template-columns: repeat(3, 1fr);">
+                <div class="kpi">
+                    <span class="kpi-val" id="res-bottleneck"
+                        style="color: var(--primary); font-size:1.4rem;">Loader</span>
+                    <span class="kpi-label">Bottleneck (>85% Util)</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-val" id="res-wait" style="color: var(--success); font-size:1.4rem;">0.0m</span>
+                    <span class="kpi-label">Average Wait (Wq)</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-val" id="res-cost" style="color: var(--truck-color); font-size:1.4rem;">$0 ±
+                        0%</span>
+                    <span class="kpi-label">Est. Daily Cost (95% CI)</span>
+                </div>
+            </div>
+
+            <div id="chart-container">
+                <canvas id="waitChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-panel" id="log-panel" style="margin-top: 20px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px;">
+            <h2 style="color: var(--warning); margin: 0; font-size: 1.1rem;">📜 System Change Log</h2>
+            <button onclick="clearSimLog()"
+                style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;">
+                Clear History
+            </button>
+        </div>
+        <div id="sim-log-entries"
+            style="max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem; color: var(--text-muted); padding-right: 5px;">
+            <div style="color: var(--success); opacity: 0.7;">[SYSTEM] Log initialized. Awaiting AI commands...</div>
+        </div>
+    </div>
+
+    <div class="chat-widget" id="chat-widget">
+        <div class="chat-header">
+            <span>Optimization AI</span>
+            <button id="chat-min"
+                style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 1.2rem; font-weight: bold; line-height: 1;">+</button>
+        </div>
+        <div class="chat-msgs" id="chat-messages" style="display:none;">
+            <div class="msg ai">Welcome to the Systems Simulator. How can I help you?</div>
+        </div>
+        <div class="chat-input-area" id="chat-input-area" style="display:none;">
+            <input type="text" id="chat-input" placeholder="Query simulation data...">
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div class="modal-overlay" id="summary-modal">
+        <div class="modal-content">
+            <h2>Shift End Summary</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Simulation completed successfully.</p>
+            <div class="summary-stats">
+                <div class="summary-stat-box">
+                    <div class="label">Total Duration</div>
+                    <div class="value" id="sum-duration">0 hrs</div>
+                </div>
+                <div class="summary-stat-box">
+                    <div class="label">Total Cost</div>
+                    <div class="value" id="sum-cost">$0</div>
+                </div>
+                <div class="summary-stat-box">
+                    <div class="label">Avg Wait (Lq)</div>
+                    <div class="value" id="sum-wait">0.0</div>
+                </div>
+                <div class="summary-stat-box">
+                    <div class="label">Loader Util (ρ)</div>
+                    <div class="value" id="sum-util">0%</div>
+                </div>
+            </div>
+            <button class="modal-close-btn"
+                onclick="document.getElementById('summary-modal').style.display='none'">Close Report</button>
+        </div>
+    </div>
+
+    <script>
+        // --- New Global for Custom Image ---
+        let customTruckImg = null;
+
+        function getStochasticTime(base, type) {
+            if (type === 'fixed') return base;
+            if (type === 'uniform') return base * (0.7 + Math.random() * 0.6);
+            if (type === 'exponential') return -base * Math.log(Math.random() || 0.0001);
+            return base;
+        }
+
+        // --- Cached DOM Elements to prevent repeated querying ---
+        const domTimeSlider = document.getElementById('time-slider');
+        const domStatTime = document.getElementById('stat-time');
+        const domStatAvgWait = document.getElementById('stat-avg-wait');
+        const domStatUtil = document.getElementById('stat-util');
+        const domStatTotalCost = document.getElementById('stat-total-cost');
+        const domBtnPlay = document.getElementById('btn-play');
+        const domSpeedValDisplay = document.getElementById('speed-val-display');
+
+        let simHistory = [];
+        let animTime = 0, isPlaying = false, simSpeed = 5, lastFrame = performance.now();
+        let truckEls = {};
+        let MAX_SIM_TIME = 480;
+        let lastSimIndex = 0; // Optimization: History array index
+        let runConfig = { loaderCount: 1, scaleCount: 1, truckCount: 1, tCost: 0, sCost: 0, hourlyCost: 0 };
+        let renderFrameCount = 0;
+        let animLoopRunning = false;
+        let cachedHmLq = null, cachedHmSq = null;
+
+        let pathTop = 60;
+        let pathBottom = 320;
+        let lSpacing = 65;
+        let sSpacing = 65;
+
+        function runSimulation() {
+            const loaderCount = parseInt(document.getElementById('cfg-loader-count').value) || 1;
+            const scaleCount = parseInt(document.getElementById('cfg-scale-count').value) || 1;
+            const truckCount = parseInt(document.getElementById('cfg-truck-count').value) || 1;
+            const shiftHrs = parseFloat(document.getElementById('cfg-shift-hours').value) || 8;
+            const tCost = parseInt(document.getElementById('cfg-cost-truck').value) || 0;
+            const sCost = parseInt(document.getElementById('cfg-cost-station').value) || 0;
+
+            runConfig = {
+                loaderCount, scaleCount, truckCount, tCost, sCost,
+                hourlyCost: (truckCount * tCost) + ((loaderCount + scaleCount) * sCost)
+            };
+            MAX_SIM_TIME = shiftHrs * 60;
+
+            domTimeSlider.max = MAX_SIM_TIME;
+            lastSimIndex = 0; // Reset history index on new run
+
+            const maxStations = Math.max(loaderCount, scaleCount);
+            const requiredStationsHeight = maxStations * 70;
+            pathBottom = pathTop + requiredStationsHeight + 40;
+            const containerHeight = pathTop + 40 + requiredStationsHeight + 50;
+
+            const simArea = document.getElementById('sim-area');
+            const lQueueBox = document.getElementById('l-queue-box');
+            const sQueueBox = document.getElementById('s-queue-box');
+
+            simArea.style.height = containerHeight + 'px';
+            // Position queues at the same level as the first row of stations
+            lQueueBox.style.top = (pathTop + 40) + 'px';
+            sQueueBox.style.top = (pathTop + 40) + 'px';
+            // Compute station spacing FIRST so SVG uses correct values
+            lSpacing = requiredStationsHeight / loaderCount;
+            sSpacing = requiredStationsHeight / scaleCount;
+
+
+
+            // ──── Coordinates for full path circuit ────────────────────────
+            var LD_L = 420, LD_W = 90, SC_L = 960, SC_W = 90;
+            var LD_CY_1 = pathTop + 40 + 27;
+            var SC_CY_1 = pathTop + 40 + 27;
+
+            // Queues are now at station level
+            var LQ_CY = pathTop + 40 + 27;
+            var LQ_R = 360;
+
+            var SQ_L = 560;
+            var SQ_R = 900;
+            var SQ_CY = pathTop + 40 + 27;
+
+            var RETURN_X = 1150;
+            var RETURN_TOP = pathTop - 20;
+            var DESCENT_X = 40;
+            var R = 16;
+
+            var p1_arr = [];
+            var p2_arr = [];
+            var p3_arr = [];
+            var p4_arr = [];
+            var PAD = 4;
+
+            // Segment 1: LQ → Loaders
+            // First loader: straight horizontal (same Y)
+            p1_arr.push(`M ${LQ_R} ${LQ_CY} L ${LD_L - PAD} ${LD_CY_1}`);
+            // Additional loaders: branch down from main path via spine
+            var LSPINE1 = 390;
+            for (let i = 1; i < loaderCount; i++) {
+                let yy = pathTop + 40 + i * lSpacing + 27;
+                p1_arr.push(`M ${LSPINE1 - R} ${LQ_CY} a${R},${R} 0 0 1 ${R},${R} L ${LSPINE1} ${yy - R} a${R},${R} 0 0 0 ${R},${R} L ${LD_L - PAD} ${yy}`);
+            }
+
+            // Segment 2: Loaders → SQ
+            var LD_RIGHT = LD_L + LD_W;
+            // First loader: straight horizontal (same Y)
+            p2_arr.push(`M ${LD_RIGHT + PAD} ${LD_CY_1} L ${SQ_L - PAD} ${SQ_CY}`);
+            // Additional loaders: go right, curve up to SQ level via spine
+            var RSPINE2 = 535;
+            for (let i = 1; i < loaderCount; i++) {
+                let yy = pathTop + 40 + i * lSpacing + 27;
+                p2_arr.push(`M ${LD_RIGHT + PAD} ${yy} L ${RSPINE2 - R} ${yy} a${R},${R} 0 0 0 ${R},${-R} L ${RSPINE2} ${SQ_CY + R} a${R},${R} 0 0 1 ${R},${-R} L ${SQ_L - PAD} ${SQ_CY}`);
+            }
+
+            // Segment 3: SQ → Scales
+            // First scale: straight horizontal (same Y)
+            p3_arr.push(`M ${SQ_R} ${SQ_CY} L ${SC_L - PAD} ${SC_CY_1}`);
+            // Additional scales: branch down from SQ level via spine
+            var RSPINE3 = 930;
+            for (let i = 1; i < scaleCount; i++) {
+                let yy = pathTop + 40 + i * sSpacing + 27;
+                p3_arr.push(`M ${RSPINE3 - R} ${SQ_CY} a${R},${R} 0 0 1 ${R},${R} L ${RSPINE3} ${yy - R} a${R},${R} 0 0 0 ${R},${R} L ${SC_L - PAD} ${yy}`);
+            }
+
+            // Segment 4: Scales → return path → LQ
+            var SC_RIGHT = SC_L + SC_W;
+            var SC_CY_LAST = pathTop + 40 + (scaleCount - 1) * sSpacing + 27;
+            var RETURN_Y = RETURN_TOP;
+
+            if (scaleCount === 1) {
+                p4_arr.push(`M ${SC_RIGHT + PAD} ${SC_CY_1} L ${RETURN_X - R} ${SC_CY_1} a${R},${R} 0 0 0 ${R},${-R} L ${RETURN_X} ${RETURN_Y + R} a${R},${R} 0 0 0 ${-R},${-R} L ${DESCENT_X + R} ${RETURN_Y} a${R},${R} 0 0 0 ${-R},${R} L ${DESCENT_X} ${LQ_CY - R} a${R},${R} 0 0 0 ${R},${R} L ${DESCENT_X + R + 10} ${LQ_CY}`);
+            } else {
+                p4_arr.push(`M ${SC_RIGHT + PAD} ${SC_CY_LAST} L ${RETURN_X - R} ${SC_CY_LAST} a${R},${R} 0 0 0 ${R},${-R} L ${RETURN_X} ${RETURN_Y + R} a${R},${R} 0 0 0 ${-R},${-R} L ${DESCENT_X + R} ${RETURN_Y} a${R},${R} 0 0 0 ${-R},${R} L ${DESCENT_X} ${LQ_CY - R} a${R},${R} 0 0 0 ${R},${R} L ${DESCENT_X + R + 10} ${LQ_CY}`);
+                for (let i = 0; i < scaleCount - 1; i++) {
+                    let y = pathTop + 40 + i * sSpacing + 27;
+                    p4_arr.push(`M ${SC_RIGHT + PAD} ${y} L ${RETURN_X} ${y}`);
+                }
+            }
+
+            var svg = document.getElementById('anim-path-svg');
+            var joint_p1 = p1_arr.join(' ');
+            var joint_p2 = p2_arr.join(' ');
+            var joint_p3 = p3_arr.join(' ');
+            var joint_p4 = p4_arr.join(' ');
+
+            svg.innerHTML =
+                '<defs>' +
+                '<filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">' +
+                '<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+                '</filter>' +
+                '<filter id="glow-teal" x="-50%" y="-50%" width="200%" height="200%">' +
+                '<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+                '</filter>' +
+                '<linearGradient id="path-grad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+                '<stop offset="0%" stop-color="#38bdf8" />' +
+                '<stop offset="100%" stop-color="#2dd4bf" />' +
+                '</linearGradient>' +
+                '<marker id="arr" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">' +
+                '<path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8"/>' +
+                '</marker>' +
+                '<marker id="arr2" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">' +
+                '<path d="M0,0 L6,3 L0,6 Z" fill="#2dd4bf"/>' +
+                '</marker>' +
+                '</defs>' +
+                // Base lines 
+                '<path d="' + joint_p1 + '" fill="none" class="path-base" stroke="rgba(45,212,191,0.2)" stroke-width="4" filter="url(#glow-teal)"/>' +
+                '<path d="' + joint_p2 + '" fill="none" class="path-base" stroke="rgba(45,212,191,0.2)" stroke-width="4" filter="url(#glow-teal)"/>' +
+                '<path d="' + joint_p3 + '" fill="none" class="path-base" stroke="rgba(45,212,191,0.2)" stroke-width="4" filter="url(#glow-teal)"/>' +
+                '<path d="' + joint_p4 + '" fill="none" class="path-base" stroke="rgba(56,189,248,0.2)" stroke-width="4" filter="url(#glow-cyan)"/>' +
+                // Colored Flow lines
+                p1_arr.map(p => `<path d="${p}" fill="none" stroke="#2dd4bf" stroke-width="2" marker-end="url(#arr2)"/>`).join('') +
+                p2_arr.map((p, i) => `<path d="${p}" fill="none" stroke="#2dd4bf" stroke-width="2" ${i === 0 ? 'marker-end="url(#arr2)"' : ''}/>`).join('') +
+                p3_arr.map(p => `<path d="${p}" fill="none" stroke="#2dd4bf" stroke-width="2" marker-end="url(#arr2)"/>`).join('') +
+                p4_arr.map((p, i) => `<path d="${p}" fill="none" stroke="#38bdf8" stroke-width="2" ${i === 0 ? 'marker-end="url(#arr)"' : ''}/>`).join('') +
+                // Animated dashes map on top
+                '<path d="' + joint_p1 + '" fill="none" stroke="#ccfbf1" stroke-width="2" class="path-flow"/>' +
+                '<path d="' + joint_p2 + '" fill="none" stroke="#ccfbf1" stroke-width="2" class="path-flow"/>' +
+                '<path d="' + joint_p3 + '" fill="none" stroke="#ccfbf1" stroke-width="2" class="path-flow"/>' +
+                '<path d="' + joint_p4 + '" fill="none" stroke="#e0f2fe" stroke-width="2" class="path-flow"/>';
+
+            const avgLoad = parseFloat(document.getElementById('dist-load-avg').value);
+            const travelBase = parseFloat(document.getElementById('cfg-travel-base').value);
+            const distType = document.getElementById('dist-type').value;
+
+            const lContainer = document.getElementById('loader-container');
+            const sContainer = document.getElementById('scale-container');
+            lContainer.innerHTML = '';
+            sContainer.innerHTML = '';
+
+            for (let i = 0; i < loaderCount; i++) {
+                const div = document.createElement('div');
+                div.className = 'resource';
+                div.setAttribute('data-icon', '⛏');
+                div.innerText = 'LD ' + (i + 1);
+                div.style.left = '420px';
+                div.style.top = (pathTop + 40 + i * lSpacing) + 'px';
+                lContainer.appendChild(div);
+            }
+
+            for (let i = 0; i < scaleCount; i++) {
+                const div = document.createElement('div');
+                div.className = 'resource';
+                div.setAttribute('data-icon', '⚖');
+                div.innerText = 'SC ' + (i + 1);
+                div.style.left = '960px';
+                div.style.top = (pathTop + 40 + i * sSpacing) + 'px';
+                sContainer.appendChild(div);
+            }
+
+            let trucks = Array.from({ length: truckCount }, (_, i) => ({
+                id: i + 1, state: 'LQ', stateStart: 0, stateEnd: 0, resId: -1, totalWait: 0
+            }));
+
+            let LQ = trucks.slice(0, Math.max(1, truckCount - scaleCount));
+            let SQ = trucks.slice(Math.max(1, truckCount - scaleCount));
+            SQ.forEach(t => t.state = 'SQ');
+
+            // Build Dynamic Heatmap Blobs
+            const hmLayer = document.getElementById('heatmap-layer');
+            hmLayer.innerHTML = `
+                <div class="hm-blob" id="hm-lq" style="left: -20px; top: ${pathTop}px; width: 440px; height: 160px;"></div>
+                <div class="hm-blob" id="hm-sq" style="left: 530px; top: ${pathTop}px; width: 420px; height: 160px;"></div>
+            `;
+
+            let loaders = Array(loaderCount).fill(null);
+            let scales = Array(scaleCount).fill(null);
+            let events = [];
+            simHistory = [];
+
+            function addEv(t, type, obj) {
+                // Binary insertion: O(n) instead of O(n·log·n) sort
+                let lo = 0, hi = events.length;
+                while (lo < hi) {
+                    let mid = (lo + hi) >>> 1;
+                    if (events[mid].t <= t) lo = mid + 1; else hi = mid;
+                }
+                events.splice(lo, 0, { t, type, obj });
+            }
+
+            let stats = { busyLoaders: 0, busyScale: 0, waitSum: 0, lastT: 0 };
+
+            function snap(t) {
+                let dt = t - stats.lastT;
+                stats.busyLoaders += (loaders.filter(l => l !== null).length) * dt;
+                stats.busyScale += (scales.filter(s => s !== null).length) * dt;
+                stats.waitSum += (LQ.length + SQ.length) * dt;
+                stats.lastT = t;
+
+                simHistory.push({
+                    t,
+                    trucks: trucks.map(tr => ({ id: tr.id, state: tr.state, stateStart: tr.stateStart, stateEnd: tr.stateEnd, resId: tr.resId, totalWait: tr.totalWait })),
+                    LQ: LQ.map(tr => tr.id),
+                    SQ: SQ.map(tr => tr.id),
+                    loaders: loaders.map(l => l ? l.id : null),
+                    scales: scales.map(s => s ? s.id : null),
+                    stats: { busyLoaders: stats.busyLoaders, busyScale: stats.busyScale, waitSum: stats.waitSum, lastT: stats.lastT }
+                });
+            }
+
+            function process(t) {
+                for (let i = 0; i < loaderCount; i++) {
+                    if (!loaders[i] && LQ.length) {
+                        let tr = LQ.shift(); loaders[i] = tr;
+                        tr.state = 'L'; tr.resId = i; tr.stateStart = t;
+                        let dur = getStochasticTime(avgLoad, distType);
+                        tr.stateEnd = t + dur;
+                        addEv(t + dur, 'EL', tr);
+                    }
+                }
+                for (let i = 0; i < scaleCount; i++) {
+                    if (!scales[i] && SQ.length) {
+                        let tr = SQ.shift(); scales[i] = tr;
+                        tr.state = 'S'; tr.resId = i; tr.stateStart = t;
+                        let dur = getStochasticTime(12, distType);
+                        tr.stateEnd = t + dur;
+                        addEv(t + dur, 'ES', tr);
+                    }
+                }
+            }
+
+            snap(0); process(0);
+            while (events.length > 0 && stats.lastT < MAX_SIM_TIME) {
+                let ev = events.shift();
+                snap(ev.t);
+                if (ev.type === 'EL') {
+                    loaders[ev.obj.resId] = null;
+                    ev.obj.state = 'SQ'; SQ.push(ev.obj);
+                } else if (ev.type === 'ES') {
+                    scales[ev.obj.resId] = null;
+                    ev.obj.state = 'T'; ev.obj.stateStart = ev.t;
+                    let dur = getStochasticTime(travelBase, distType);
+                    ev.obj.stateEnd = ev.t + dur;
+                    addEv(ev.t + dur, 'ET', ev.obj);
+                } else if (ev.type === 'ET') {
+                    ev.obj.state = 'LQ'; LQ.push(ev.obj);
+                }
+                process(ev.t);
+                snap(ev.t);
+            }
+        }
+
+        // --- Modified initRender to apply custom image ---
+        function initRender() {
+            const area = document.getElementById('sim-area');
+            const truckCount = parseInt(document.getElementById('cfg-truck-count').value) || 1;
+            Object.values(truckEls).forEach(el => el.remove());
+            truckEls = {};
+            for (let i = 1; i <= truckCount; i++) {
+                let d = document.createElement('div');
+                d.className = 'truck';
+                d.innerText = i;
+                if (customTruckImg) d.style.backgroundImage = `url(${customTruckImg})`;
+                d._x = 100; d._y = 100; d._angle = 0; d._lt = -10;
+                area.appendChild(d);
+                truckEls[i] = d;
+            }
+        }
+
+        function startAnimLoop() {
+            if (!animLoopRunning) {
+                animLoopRunning = true;
+                lastFrame = performance.now();
+                requestAnimationFrame(render);
+            }
+        }
+
+        function render(now) {
+            let delta = (now - lastFrame) / 1000;
+            lastFrame = now;
+            renderFrameCount++;
+
+            if (isPlaying) {
+                animTime += delta * simSpeed;
+                if (animTime >= MAX_SIM_TIME) {
+                    animTime = MAX_SIM_TIME;
+                    isPlaying = false;
+                    domBtnPlay.innerText = 'Restart Simulation';
+                    showSummaryModal(); // Trigger end of shift summary
+                }
+                domTimeSlider.value = animTime;
+            } else {
+                let sliderVal = parseFloat(domTimeSlider.value);
+                if (Math.abs(animTime - sliderVal) > 0.5) { lastSimIndex = 0; } // Resets search if user scrubs slider manually
+                animTime = sliderVal;
+            }
+
+            let s = simHistory[lastSimIndex] || simHistory[0];
+            if (s) {
+                // Optimized history search
+                if (animTime < s.t) { lastSimIndex = 0; s = simHistory[0]; }
+                for (let i = lastSimIndex; i < simHistory.length; i++) {
+                    if (simHistory[i].t <= animTime) { s = simHistory[i]; lastSimIndex = i; }
+                    else break;
+                }
+
+                // Throttle KPI text updates to every 5th frame
+                if (renderFrameCount % 5 === 0) {
+                    domStatTime.innerText = animTime.toFixed(1) + 'm';
+                    let wait = animTime > 0 ? (s.stats.waitSum / animTime) : 0;
+                    domStatAvgWait.innerText = wait.toFixed(2);
+
+                    let util = animTime > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * animTime)) * 100 : 0;
+                    domStatUtil.innerText = Math.min(100, util).toFixed(1) + '%';
+
+                    let totalCost = runConfig.hourlyCost * (animTime / 60);
+                    domStatTotalCost.innerText = '$' + totalCost.toFixed(0);
+                }
+
+                s.trucks.forEach(t => {
+                    let tx, ty, targetAngle = null;
+                    const truckSpacing = 48;
+
+                    if (t.state === 'L') { tx = 465; ty = pathTop + 40 + t.resId * lSpacing + 27; targetAngle = 0; }
+                    else if (t.state === 'S') { tx = 1005; ty = pathTop + 40 + t.resId * sSpacing + 27; targetAngle = 0; }
+                    else if (t.state === 'LQ') { tx = 330 - s.LQ.indexOf(t.id) * truckSpacing; ty = pathTop + 40 + 27; targetAngle = 0; }
+                    else if (t.state === 'SQ') { tx = 870 - s.SQ.indexOf(t.id) * truckSpacing; ty = pathTop + 40 + 27; targetAngle = 0; }
+                    else if (t.state === 'T') {
+                        let p = (animTime - t.stateStart) / (t.stateEnd - t.stateStart || 1);
+                        p = Math.max(0, Math.min(1, p));
+
+                        let cy = pathTop + 40 + t.resId * sSpacing + 27;
+                        let SCX_START = 1050; // SC_RIGHT
+                        let RETURN_X = 1150;
+                        let T_TOP = pathTop - 20;
+                        let LQ_L = 40;
+                        let LQ_CY_T = pathTop + 40 + 27; // queues now at station level
+
+                        let R_CURVE = 16;
+                        let leg0 = RETURN_X - SCX_START; // right from scale to spine
+                        let leg1 = cy - T_TOP;           // up the spine
+                        let leg2 = RETURN_X - LQ_L;      // left across top lane
+                        let leg3 = LQ_CY_T - T_TOP - R_CURVE;      // down descent spine to just before curve
+                        let leg4 = Math.PI * R_CURVE / 2; // curve
+                        let leg5 = 16; // slight right into queue
+
+                        let totalD = leg0 + leg1 + leg2 + leg3 + leg4 + leg5;
+                        let d = p * totalD;
+
+                        // Travel anim follows the returned path geometry:
+                        if (d < leg0) {
+                            tx = SCX_START + d; ty = cy; targetAngle = 0;
+                        } else if (d < leg0 + leg1) {
+                            tx = RETURN_X; ty = cy - (d - leg0); targetAngle = -90;
+                        } else if (d < leg0 + leg1 + leg2) {
+                            tx = RETURN_X - (d - leg0 - leg1); ty = T_TOP; targetAngle = 180;
+                        } else if (d < leg0 + leg1 + leg2 + leg3) {
+                            tx = LQ_L; ty = T_TOP + (d - leg0 - leg1 - leg2); targetAngle = 90;
+                        } else {
+                            // After rounding corner, point perfectly right into the queue
+                            tx = LQ_L + (d - (leg0 + leg1 + leg2 + leg3)); ty = LQ_CY_T; targetAngle = 0;
+                        }
+                    }
+
+                    let el = truckEls[t.id];
+                    if (el) {
+                        let lerp = 1 - Math.exp(-14 * delta);
+                        if (Math.abs(animTime - (el._lt || 0)) > 2) { el._x = tx; el._y = ty; if (targetAngle !== null) el._angle = targetAngle; }
+                        el._lt = animTime;
+                        el._x += (tx - el._x) * lerp; el._y += (ty - el._y) * lerp;
+                        if (targetAngle !== null) {
+                            let diff = targetAngle - el._angle;
+                            while (diff < -180) diff += 360; while (diff > 180) diff -= 360;
+                            el._angle += diff * (1 - Math.exp(-10 * delta));
+                        }
+                        el.style.transform = `translate(${el._x}px, ${el._y}px) rotate(${el._angle}deg)`;
+                    }
+                });
+
+                // Update heatmap dynamically (use cached refs)
+                if (cachedHmLq && cachedHmSq) {
+                    const lqRatio = Math.min(1, s.LQ.length / 5);
+                    const sqRatio = Math.min(1, s.SQ.length / 5);
+                    cachedHmLq.style.opacity = Math.max(0, lqRatio - 0.1);
+                    cachedHmSq.style.opacity = Math.max(0, sqRatio - 0.1);
+                }
+            }
+
+            // Idle-aware loop: only continue if playing or slider is being scrubbed
+            if (isPlaying) {
+                requestAnimationFrame(render);
+            } else {
+                animLoopRunning = false;
+            }
+        }
+
+        // --- Summary Modal Logic ---
+        function showSummaryModal() {
+            const modal = document.getElementById('summary-modal');
+
+            // Re-fetch final logic to display
+            let s = simHistory[simHistory.length - 1] || simHistory[0];
+            const shiftHrs = MAX_SIM_TIME / 60;
+
+            let wait = MAX_SIM_TIME > 0 ? (s.stats.waitSum / MAX_SIM_TIME) : 0;
+            let util = MAX_SIM_TIME > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * MAX_SIM_TIME)) * 100 : 0;
+            let totalCost = runConfig.hourlyCost * shiftHrs;
+
+            document.getElementById('sum-duration').innerText = shiftHrs + ' hrs';
+            document.getElementById('sum-cost').innerText = '$' + totalCost.toFixed(0);
+            document.getElementById('sum-wait').innerText = wait.toFixed(2);
+            document.getElementById('sum-util').innerText = Math.min(100, util).toFixed(1) + '%';
+
+            modal.style.display = 'flex';
+        }
+
+        // --- Chatbot Logic ---
+        const chatInput = document.getElementById('chat-input');
+        const chatBox = document.getElementById('chat-messages');
+        const chatMinBtn = document.getElementById('chat-min');
+        const chatInputArea = document.getElementById('chat-input-area');
+
+        if (chatMinBtn) {
+            chatMinBtn.onclick = () => {
+                const isHidden = chatBox.style.display === 'none';
+                chatBox.style.display = isHidden ? 'block' : 'none';
+                chatInputArea.style.display = isHidden ? 'flex' : 'none';
+                chatMinBtn.innerText = isHidden ? '—' : '+';
+            };
+        }
+
+        // --- Image Upload Handler ---
+        const fileInput = document.getElementById('truck-image-upload');
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                customTruckImg = URL.createObjectURL(file);
+                // Immediately update existing trucks
+                Object.values(truckEls).forEach(el => {
+                    el.style.backgroundImage = `url(${customTruckImg})`;
+                    el.style.backgroundAlpha = "0.8";
+                });
+                addAiMessage("System updated: New truck entity model loaded.");
+            }
+        };
+
+        // --- Helper to add AI messages manually ---
+        function addAiMessage(text) {
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'msg ai';
+            aiMsg.innerText = text;
+            chatBox.appendChild(aiMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // --- Log Helper ---
+        function addToSimLog(action) {
+            const logContainer = document.getElementById('sim-log-entries');
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" +
+                now.getMinutes().toString().padStart(2, '0') + ":" +
+                now.getSeconds().toString().padStart(2, '0');
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-timestamp">[${timeStr}]</span>
+                               <span class="log-action">${action}</span>`;
+
+            logContainer.prepend(entry); // Newest logs at the top
+        }
+
+        function clearSimLog() {
+            const logContainer = document.getElementById('sim-log-entries');
+            // Fade out effect before clearing
+            logContainer.style.opacity = '0';
+
+            setTimeout(() => {
+                logContainer.innerHTML = '<div style="color: var(--success); opacity: 0.7;">[SYSTEM] Log cleared. Awaiting new data...</div>';
+                logContainer.style.opacity = '1';
+            }, 200);
+
+            addToSimLog("User manually cleared the system log history.");
+        }
+
+        // --- UPGRADED Chat Handler with AI Simulation Control ---
+        async function handleChat() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            // 1. Display User Message
+            const uMsg = document.createElement('div');
+            uMsg.className = 'msg user';
+            uMsg.innerText = query;
+            chatBox.appendChild(uMsg);
+            chatInput.value = '';
+
+            // 2. Prepare System Instructions for "Autonomous" Control
+            const systemPrompt = `You are the "Industrial Systems Architect," a high-level consultant integrated into this IE332 simulation environment.
+
+DATA CONTEXT:
+- Current Stats: Utilization: ${document.getElementById('stat-util').innerText}, Avg Wait: ${document.getElementById('stat-avg-wait').innerText}, Total Cost: ${document.getElementById('stat-total-cost').innerText}.
+- Logic: The system uses Stochastic (M/M/s) modeling by default.
+
+YOUR CAPABILITIES:
+You can directly modify the simulation by including these bracketed commands in your response.
+1. [SET_TRUCKS:n] - Adjust fleet size (Current: ${document.getElementById('cfg-truck-count').value}).
+2. [SET_LOADERS:n] - Adjust service capacity (Current: ${document.getElementById('cfg-loader-count').value}).
+3. [SET_HOURS:n] - Change shift duration (Recommended: 8-24 hrs for stability).
+4. [RUN_SIM] - Trigger a new simulation run.
+5. [UPLOAD_IMAGE] - Request the user to change the truck entity graphic.
+
+YOUR GOALS:
+- If the user says "Optimize," look for a balance where Loader Utilization is between 75-85%. Above 85% causes exponential wait times; below 70% is a waste of money.
+- If the user asks for a better "truck," use [UPLOAD_IMAGE].
+- Always explain the "Why" behind your changes using IE terminology like "Queue Stability," "Bottleneck Mitigation," or "Warm-up Bias."
+
+RESPONSE STYLE:
+Keep it professional, data-driven, and concise. Do not mention the bracketed commands to the user; just use them to execute the actions.`;
+
+            try {
+                let res, retries = 3;
+                const models = ['gemini-2.0-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+                while (retries > 0) {
+                    const model = models[3 - retries];
+                    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=AIzaSyD_K8pNZk0SEFU1vv8FcoZcP75hseP198k`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: query }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+                    if (res.status === 429 && retries > 1) {
+                        retries--;
+                        await new Promise(r => setTimeout(r, 4000));
+                        continue;
+                    }
+                    break;
+                }
+
+                if (res.status === 429) {
+                    addAiMessage("⚠️ Rate limit reached. The free API tier allows limited requests per minute. Please wait ~30 seconds and try again.");
+                    return;
+                }
+
+                if (!res.ok) {
+                    const errBody = await res.text();
+                    console.error('API Error:', res.status, errBody);
+                    addAiMessage(`API Error (${res.status}): ${res.statusText}. Check console for details.`);
+                    return;
+                }
+
+                const data = await res.json();
+                if (!data.candidates || !data.candidates[0]) {
+                    console.error('Unexpected API response:', data);
+                    addAiMessage("Unexpected response from API. Check console for details.");
+                    return;
+                }
+                const aiResponse = data.candidates[0].content.parts[0].text;
+
+                // 3. Parse Commands from AI Response & Log
+                let shouldRestart = false;
+
+                if (aiResponse.includes('[SET_TRUCKS:')) {
+                    const match = aiResponse.match(/\[SET_TRUCKS:(\d+)\]/);
+                    if (match) {
+                        document.getElementById('cfg-truck-count').value = match[1];
+                        addToSimLog(`AI adjusted Fleet Size to ${match[1]} trucks.`);
+                        shouldRestart = true;
+                    }
+                }
+
+                if (aiResponse.includes('[SET_LOADERS:')) {
+                    const match = aiResponse.match(/\[SET_LOADERS:(\d+)\]/);
+                    if (match) {
+                        document.getElementById('cfg-loader-count').value = match[1];
+                        addToSimLog(`AI adjusted Loader Count to ${match[1]} units.`);
+                        shouldRestart = true;
+                    }
+                }
+
+                if (aiResponse.includes('[SET_HOURS:')) {
+                    const match = aiResponse.match(/\[SET_HOURS:(\d+)\]/);
+                    if (match) {
+                        document.getElementById('cfg-shift-hours').value = match[1];
+                        addToSimLog(`AI updated Shift Duration to ${match[1]} hours.`);
+                        shouldRestart = true;
+                    }
+                }
+
+                if (aiResponse.includes('[RUN_SIM]') || shouldRestart) {
+                    runSimulation();
+                    initRender();
+                    cachedHmLq = document.getElementById('hm-lq');
+                    cachedHmSq = document.getElementById('hm-sq');
+                    isPlaying = true;
+                    animTime = 0;
+                    document.getElementById('btn-play').innerText = 'Pause Simulation';
+                    startAnimLoop();
+                    addToSimLog(`Simulation restarted with new parameters.`);
+                }
+
+                if (aiResponse.includes('[UPLOAD_IMAGE]')) {
+                    fileInput.click();
+                    addToSimLog(`User requested to update truck entity graphics.`);
+                }
+
+                // 4. Display AI Text (Cleaning out the bracket commands for the user)
+                const cleanText = aiResponse.replace(/\[.*?\]/g, '');
+                addAiMessage(cleanText);
+
+            } catch (e) {
+                console.error('Chat error:', e);
+                addAiMessage("Connection error: " + e.message);
+            }
+        }
+
+        if (chatInput) {
+            chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleChat(); });
+        }
+
+        const playBtn = document.getElementById('btn-play');
+        playBtn.onclick = () => {
+            if (animTime === 0 || animTime >= MAX_SIM_TIME || Object.keys(truckEls).length === 0) {
+                // First run or restart after finish/slider reset
+                initRender();
+                runSimulation();
+                cachedHmLq = document.getElementById('hm-lq');
+                cachedHmSq = document.getElementById('hm-sq');
+                isPlaying = true;
+                animTime = 0;
+                playBtn.innerText = 'Pause Simulation';
+                startAnimLoop();
+            } else {
+                // Pause / Resume toggle
+                isPlaying = !isPlaying;
+                playBtn.innerText = isPlaying ? 'Pause Simulation' : 'Resume Simulation';
+                if (isPlaying) startAnimLoop();
+            }
+        };
+
+        // Export CSV Event Handler
+        document.getElementById('btn-export-csv').onclick = () => {
+            if (!simHistory || simHistory.length === 0) {
+                alert("Please run a simulation first to populate data.");
+                return;
+            }
+
+            // Build CSV Content
+            let csvStr = "Time_Min,Avg_Wait_Time_Min,Loader_Util_Pct,Scale_Util_Pct,Loader_Queue_Length,Scale_Queue_Length,Cumulative_Cost_USD\n";
+            simHistory.forEach(s => {
+                let wait = s.t > 0 ? (s.stats.waitSum / s.t).toFixed(2) : 0;
+                let utilL = s.t > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * s.t) * 100).toFixed(1) : 0;
+                let utilS = s.t > 0 ? (s.stats.busyScale / (runConfig.scaleCount * s.t) * 100).toFixed(1) : 0;
+                let cost = (runConfig.hourlyCost * (s.t / 60)).toFixed(2);
+
+                csvStr += `${s.t.toFixed(1)},${wait},${utilL},${utilS},${s.LQ.length},${s.SQ.length},${cost}\n`;
+            });
+
+            // Download mechanism
+            const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `simulation_export_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Heatmap Toggle Event Handler (cached reference)
+        const domHeatmapBtn = document.getElementById('btn-toggle-heatmap');
+        const domSimArea = document.getElementById('sim-area');
+        domHeatmapBtn.onclick = () => {
+            domSimArea.classList.toggle('sim-area-heatmap');
+            const isActive = domSimArea.classList.contains('sim-area-heatmap');
+            if (isActive) {
+                domHeatmapBtn.style.color = 'var(--danger)';
+                domHeatmapBtn.style.borderColor = 'var(--danger)';
+            } else {
+                domHeatmapBtn.style.color = 'var(--text-muted)';
+                domHeatmapBtn.style.borderColor = 'var(--border)';
+            }
+        };
+
+        const speedSlider = document.getElementById('speed-slider');
+        const speedDisplay = document.getElementById('speed-val-display');
+
+        function updateSpeedDisplay() {
+            simSpeed = speedSlider.value;
+            speedDisplay.innerText = simSpeed + 'x';
+
+            const min = parseFloat(speedSlider.min);
+            const max = parseFloat(speedSlider.max);
+            const val = parseFloat(speedSlider.value);
+            const percent = ((val - min) / (max - min)) * 100;
+
+            // Thumb width is 36px, radius is 18px.
+            // Center = 18px + percent * (100% - 36px) = calc(18px + percent% - percent*0.36px)
+            speedDisplay.style.left = `calc(18px + ${percent}% - ${percent * 0.36}px)`;
+        }
+
+        speedSlider.addEventListener('input', updateSpeedDisplay);
+        updateSpeedDisplay(); // initial positioning
+
+        runSimulation();
+        initRender();
+        cachedHmLq = document.getElementById('hm-lq');
+        cachedHmSq = document.getElementById('hm-sq');
+        // Start with a single frame render for initial state, but don't loop
+        requestAnimationFrame(render);
+
+        // Allow slider scrubbing to trigger render frames when paused
+        domTimeSlider.addEventListener('input', () => {
+            if (!isPlaying) startAnimLoop();
+        });
+
+        // --- Advanced Statistical Analysis Engine ---
+        let chartInstance = null;
+
+        function runHeadlessSimulationMode(simLength, lCount, sCount, tCount, avgLoad, travelBase, distType, hourlyCost) {
+            let hlLoaders = Array(lCount).fill(null);
+            let hlScale = Array(sCount).fill(null);
+            let truckCountVal = tCount;
+            let hlLQ = [];
+            for (let i = 1; i <= Math.max(1, truckCountVal - sCount); i++) hlLQ.push(i);
+            let hlSQ = [];
+            for (let i = Math.max(1, truckCountVal - sCount) + 1; i <= truckCountVal; i++) hlSQ.push(i);
+
+            let hlEvents = [];
+            function hlAddEvent(t, type, truckId) {
+                // Binary insertion: O(n) instead of O(n·log·n) sort
+                let lo = 0, hi = hlEvents.length;
+                while (lo < hi) {
+                    let mid = (lo + hi) >>> 1;
+                    if (hlEvents[mid].t <= t) lo = mid + 1; else hi = mid;
+                }
+                hlEvents.splice(lo, 0, { t, type, truckId });
+            }
+
+            let simStats = {
+                loaderBusy: 0,
+                scaleBusy: 0,
+                waitTimes: [],
+                truckQStart: {},
+                totalCost: 0
+            };
+
+            hlLQ.forEach(id => simStats.truckQStart[id] = 0);
+            hlSQ.forEach(id => simStats.truckQStart[id] = 0);
+
+            function hlProcessQueues(t) {
+                for (let i = 0; i < lCount; i++) {
+                    if (hlLoaders[i] === null && hlLQ.length > 0) {
+                        let id = hlLQ.shift();
+                        hlLoaders[i] = id;
+                        let wait = Math.max(0, t - simStats.truckQStart[id]);
+                        simStats.waitTimes.push(wait);
+
+                        let dur = getStochasticTime(avgLoad, distType);
+                        simStats.loaderBusy += dur;
+                        hlAddEvent(t + dur, 'EL', id);
+                    }
+                }
+                for (let i = 0; i < sCount; i++) {
+                    if (hlScale[i] === null && hlSQ.length > 0) {
+                        let id = hlSQ.shift();
+                        hlScale[i] = id;
+                        let wait = Math.max(0, t - simStats.truckQStart[id]);
+                        simStats.waitTimes.push(wait);
+
+                        let dur = getStochasticTime(12, distType);
+                        simStats.scaleBusy += dur;
+                        hlAddEvent(t + dur, 'ES', id);
+                    }
+                }
+            }
+
+            hlProcessQueues(0);
+            let timeCurrent = 0;
+
+            while (hlEvents.length > 0) {
+                let ev = hlEvents.shift();
+                if (ev.t > simLength) break;
+                timeCurrent = ev.t;
+
+                let id = ev.truckId;
+                if (ev.type === 'EL') {
+                    for (let i = 0; i < lCount; i++) { if (hlLoaders[i] === id) hlLoaders[i] = null; }
+                    simStats.truckQStart[id] = timeCurrent;
+                    hlSQ.push(id);
+                } else if (ev.type === 'ES') {
+                    for (let i = 0; i < sCount; i++) { if (hlScale[i] === id) hlScale[i] = null; }
+                    let dur = getStochasticTime(travelBase, distType);
+                    hlAddEvent(timeCurrent + dur, 'ET', id);
+                } else if (ev.type === 'ET') {
+                    simStats.truckQStart[id] = timeCurrent;
+                    hlLQ.push(id);
+                }
+                hlProcessQueues(timeCurrent);
+            }
+
+            simStats.totalCost = hourlyCost * (simLength / 60);
+            simStats.loaderUtil = (simStats.loaderBusy / (lCount * simLength)) * 100;
+            simStats.scaleUtil = (simStats.scaleBusy / (sCount * simLength)) * 100;
+
+            return simStats;
+        }
+
+        document.getElementById('btn-run-analytics').onclick = () => {
+            let reps = parseInt(document.getElementById('replications').value) || 30;
+            let btn = document.getElementById('btn-run-analytics');
+            let ogText = btn.innerText;
+            btn.innerText = 'Simulating...';
+            btn.disabled = true;
+
+            // Fetch current config
+            const loaderCount = parseInt(document.getElementById('cfg-loader-count').value) || 1;
+            const scaleCount = parseInt(document.getElementById('cfg-scale-count').value) || 1;
+            const truckCount = parseInt(document.getElementById('cfg-truck-count').value) || 1;
+            const tCost = parseInt(document.getElementById('cfg-cost-truck').value) || 0;
+            const sCost = parseInt(document.getElementById('cfg-cost-station').value) || 0;
+            const hourlyCost = (truckCount * tCost) + ((loaderCount + scaleCount) * sCost);
+
+            const avgLoad = parseFloat(document.getElementById('dist-load-avg').value);
+            const travelBase = parseFloat(document.getElementById('cfg-travel-base').value);
+            const distType = document.getElementById('dist-type').value;
+
+            setTimeout(() => {
+                let results = [];
+                let allWaits = [];
+                for (let i = 0; i < reps; i++) {
+                    let res = runHeadlessSimulationMode(1440, loaderCount, scaleCount, truckCount, avgLoad, travelBase, distType, hourlyCost);
+                    results.push(res);
+                    allWaits = allWaits.concat(res.waitTimes);
+                }
+
+                let avgCost = results.reduce((sum, r) => sum + r.totalCost, 0) / reps;
+                let costVar = results.reduce((sum, r) => sum + Math.pow(r.totalCost - avgCost, 2), 0) / (reps - 1 || 1);
+                let costStd = Math.sqrt(costVar);
+                let marginError = 1.96 * (costStd / Math.sqrt(reps));
+                let errorPct = avgCost > 0 ? (marginError / avgCost) * 100 : 0;
+
+                let avgLoaderUtil = results.reduce((sum, r) => sum + r.loaderUtil, 0) / reps;
+                let avgScaleUtil = results.reduce((sum, r) => sum + r.scaleUtil, 0) / reps;
+                let avgWait = allWaits.length > 0 ? allWaits.reduce((sum, w) => sum + w, 0) / allWaits.length : 0;
+
+                document.getElementById('analytics-results').style.display = 'block';
+
+                let bottleneck = 'None';
+                if (avgScaleUtil > 85 && avgScaleUtil > avgLoaderUtil) bottleneck = 'Scale';
+                else if (avgLoaderUtil > 85 && avgLoaderUtil > avgScaleUtil) bottleneck = 'Loader';
+                else if (avgLoaderUtil > 80 || avgScaleUtil > 80) bottleneck = avgLoaderUtil > avgScaleUtil ? 'Loader (Soft)' : 'Scale (Soft)';
+
+                const formatNum = (num) => Math.round(num).toLocaleString('en-US');
+                document.getElementById('res-bottleneck').innerText = bottleneck;
+                document.getElementById('res-cost').innerText = '$' + formatNum(avgCost) + ' ± ' + errorPct.toFixed(1) + '%';
+                document.getElementById('res-wait').innerText = avgWait.toFixed(1) + ' min';
+
+                btn.innerText = ogText;
+                btn.disabled = false;
+
+                renderHistogram(allWaits);
+            }, 50);
+        };
+
+        function renderHistogram(data) {
+            let bins = Array(15).fill(0);
+            let binSize = 5;
+
+            data.forEach(w => {
+                let idx = Math.floor(w / binSize);
+                if (idx >= bins.length) idx = bins.length - 1;
+                bins[idx]++;
+            });
+
+            let labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}m`);
+            labels[labels.length - 1] = `>=${(bins.length - 1) * binSize}m`;
+
+            let ctx = document.getElementById('waitChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Wait Time Frequency',
+                        data: bins,
+                        backgroundColor: 'rgba(56, 189, 248, 0.8)',
+                        borderColor: '#0284c7',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#262626' },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Frequency', color: '#f8fafc' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Wait Time (Minutes)', color: '#f8fafc' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
+
 </html>
