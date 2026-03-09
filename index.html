@@ -349,15 +349,12 @@
             box-shadow:
                 0 0 0 1px rgba(15, 23, 42, 0.5),
                 0 24px 64px rgba(0, 0, 0, 0.7),
-                inset 0 1px 0 rgba(255, 255, 255, 0.03),
-                inset 0 0 80px rgba(0, 0, 0, 0.5);
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
             transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             background-image:
-                radial-gradient(ellipse 600px 300px at 50% 35%, rgba(56, 189, 248, 0.05) 0%, transparent 70%),
-                radial-gradient(ellipse 400px 200px at 75% 60%, rgba(45, 212, 191, 0.03) 0%, transparent 70%),
                 linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            background-size: 40px 40px, 40px 40px;
             contain: layout style;
         }
 
@@ -677,7 +674,6 @@
             background: radial-gradient(ellipse at center, rgba(244, 63, 94, 0.55) 0%, transparent 55%);
             opacity: 0;
             transition: opacity 0.5s ease-out;
-            box-shadow: 0 0 30px 15px rgba(244, 63, 94, 0.2);
             pointer-events: none;
         }
 
@@ -1182,7 +1178,10 @@
             <div class="msg ai">Welcome to the Systems Simulator. How can I help you?</div>
         </div>
         <div class="chat-input-area" id="chat-input-area" style="display:none;">
-            <input type="text" id="chat-input" placeholder="Query simulation data...">
+            <input type="text" id="chat-input" placeholder="Query simulation data..." maxlength="500">
+            <button id="chat-send-btn"
+                style="background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #000; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;"
+                aria-label="Send message">▶</button>
         </div>
     </div>
 
@@ -1681,28 +1680,12 @@
             modal.style.display = 'flex';
         }
 
-        // --- Chatbot Logic ---
-        const chatInput = document.getElementById('chat-input');
-        const chatBox = document.getElementById('chat-messages');
-        const chatMinBtn = document.getElementById('chat-min');
-        const chatInputArea = document.getElementById('chat-input-area');
-
-        if (chatMinBtn) {
-            chatMinBtn.onclick = () => {
-                const isHidden = chatBox.style.display === 'none';
-                chatBox.style.display = isHidden ? 'block' : 'none';
-                chatInputArea.style.display = isHidden ? 'flex' : 'none';
-                chatMinBtn.innerText = isHidden ? '—' : '+';
-            };
-        }
-
         // --- Image Upload Handler ---
         const fileInput = document.getElementById('truck-image-upload');
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
                 customTruckImg = URL.createObjectURL(file);
-                // Immediately update existing trucks
                 Object.values(truckEls).forEach(el => {
                     el.style.backgroundImage = `url(${customTruckImg})`;
                     el.style.backgroundAlpha = "0.8";
@@ -1710,15 +1693,6 @@
                 addAiMessage("System updated: New truck entity model loaded.");
             }
         };
-
-        // --- Helper to add AI messages manually ---
-        function addAiMessage(text) {
-            const aiMsg = document.createElement('div');
-            aiMsg.className = 'msg ai';
-            aiMsg.innerText = text;
-            chatBox.appendChild(aiMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
 
         // --- Log Helper ---
         function addToSimLog(action) {
@@ -1733,128 +1707,241 @@
             entry.innerHTML = `<span class="log-timestamp">[${timeStr}]</span>
                                <span class="log-action">${action}</span>`;
 
-            logContainer.prepend(entry); // Newest logs at the top
+            logContainer.prepend(entry);
         }
 
         function clearSimLog() {
             const logContainer = document.getElementById('sim-log-entries');
-            // Fade out effect before clearing
             logContainer.style.opacity = '0';
-
             setTimeout(() => {
                 logContainer.innerHTML = '<div style="color: var(--success); opacity: 0.7;">[SYSTEM] Log cleared. Awaiting new data...</div>';
                 logContainer.style.opacity = '1';
             }, 200);
-
             addToSimLog("User manually cleared the system log history.");
         }
 
-        // --- UPGRADED Chat Handler with AI Simulation Control ---
-        async function handleChat() {
-            const query = chatInput.value.trim();
-            if (!query) return;
+        // Inject loading dots CSS
+        if (!document.getElementById('chat-dot-pulse-style')) {
+            const style = document.createElement('style');
+            style.id = 'chat-dot-pulse-style';
+            style.textContent = `
+                @keyframes dotPulse {
+                    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+                    40% { opacity: 1; transform: scale(1.2); }
+                }
+                .dot-pulse {
+                    display: inline-block;
+                    color: var(--primary);
+                    font-size: 0.9rem;
+                    animation: dotPulse 1.2s ease-in-out infinite;
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
-            // 1. Display User Message
-            const uMsg = document.createElement('div');
-            uMsg.className = 'msg user';
-            uMsg.innerText = query;
-            chatBox.appendChild(uMsg);
-            chatInput.value = '';
+        // --- Chatbot Logic (Stable Rewrite) ---
+        const ChatController = {
+            input: document.getElementById('chat-input'),
+            box: document.getElementById('chat-messages'),
+            minBtn: document.getElementById('chat-min'),
+            inputArea: document.getElementById('chat-input-area'),
+            sendBtn: document.getElementById('chat-send-btn'),
+            isSending: false,
+            abortController: null,
+            conversationHistory: [],
+            lastRequestTime: 0,
+            API_KEY: 'AIzaSyBaOZTHjm_rxrBQoDIkVWseKfNshD5d-qE',
+            MODEL: 'gemini-2.5-flash',
+            TIMEOUT_MS: 30000,
+            MAX_RETRIES: 1,
+            MAX_HISTORY: 0, // Single-shot mode: no history to minimize tokens
+            MIN_COOLDOWN_MS: 15000, // 15s minimum between requests
 
-            // 2. Prepare System Instructions for "Autonomous" Control
-            const systemPrompt = `You are the "Industrial Systems Architect," a high-level consultant integrated into this IE332 simulation environment.
+            init() {
+                // Minimize/expand toggle
+                if (this.minBtn) {
+                    this.minBtn.onclick = () => {
+                        const isHidden = this.box.style.display === 'none';
+                        this.box.style.display = isHidden ? 'block' : 'none';
+                        this.inputArea.style.display = isHidden ? 'flex' : 'none';
+                        this.minBtn.innerText = isHidden ? '—' : '+';
+                        if (isHidden) this.input.focus();
+                    };
+                }
 
-DATA CONTEXT:
-- Current Stats: Utilization: ${document.getElementById('stat-util').innerText}, Avg Wait: ${document.getElementById('stat-avg-wait').innerText}, Total Cost: ${document.getElementById('stat-total-cost').innerText}.
-- Logic: The system uses Stochastic (M/M/s) modeling by default.
-
-YOUR CAPABILITIES:
-You can directly modify the simulation by including these bracketed commands in your response.
-1. [SET_TRUCKS:n] - Adjust fleet size (Current: ${document.getElementById('cfg-truck-count').value}).
-2. [SET_LOADERS:n] - Adjust service capacity (Current: ${document.getElementById('cfg-loader-count').value}).
-3. [SET_HOURS:n] - Change shift duration (Recommended: 8-24 hrs for stability).
-4. [RUN_SIM] - Trigger a new simulation run.
-5. [UPLOAD_IMAGE] - Request the user to change the truck entity graphic.
-
-YOUR GOALS:
-- If the user says "Optimize," look for a balance where Loader Utilization is between 75-85%. Above 85% causes exponential wait times; below 70% is a waste of money.
-- If the user asks for a better "truck," use [UPLOAD_IMAGE].
-- Always explain the "Why" behind your changes using IE terminology like "Queue Stability," "Bottleneck Mitigation," or "Warm-up Bias."
-
-RESPONSE STYLE:
-Keep it professional, data-driven, and concise. Do not mention the bracketed commands to the user; just use them to execute the actions.`;
-
-            try {
-                let res, retries = 3;
-                const models = ['gemini-2.0-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
-                while (retries > 0) {
-                    const model = models[3 - retries];
-                    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=AIzaSyD_K8pNZk0SEFU1vv8FcoZcP75hseP198k`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: query }] }],
-                            systemInstruction: { parts: [{ text: systemPrompt }] }
-                        })
+                // Enter key to send
+                if (this.input) {
+                    this.input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.handleChat();
                     });
-                    if (res.status === 429 && retries > 1) {
-                        retries--;
-                        await new Promise(r => setTimeout(r, 4000));
-                        continue;
+                }
+
+                // Send button
+                if (this.sendBtn) {
+                    this.sendBtn.onclick = () => this.handleChat();
+                }
+            },
+
+            // --- Build system prompt with live simulation data ---
+            buildSystemPrompt() {
+                return `You are an IE332 simulation consultant. Be concise (under 80 words).
+Current: Util=${document.getElementById('stat-util').innerText}, Wait=${document.getElementById('stat-avg-wait').innerText}, Cost=${document.getElementById('stat-total-cost').innerText}, Trucks=${document.getElementById('cfg-truck-count').value}, Loaders=${document.getElementById('cfg-loader-count').value}.
+
+CRITICAL: When changing parameters, you MUST include these exact bracket commands in your response. They are parsed by the system to execute changes:
+[SET_TRUCKS:n] [SET_LOADERS:n] [SET_HOURS:n] [RUN_SIM] [UPLOAD_IMAGE]
+Example: To set 4 trucks and run, respond with "[SET_TRUCKS:4] [RUN_SIM] I've updated the fleet size to 4 trucks."
+The bracket commands will be hidden from the user automatically. Always include [RUN_SIM] after parameter changes.
+Optimize target: 75-85% loader utilization.`;
+            },
+
+            // --- Show a typing/loading indicator ---
+            showLoading() {
+                const loader = document.createElement('div');
+                loader.className = 'msg ai';
+                loader.id = 'chat-loading';
+                loader.innerHTML = '<span style="display:inline-flex;gap:4px;"><span class="dot-pulse">●</span><span class="dot-pulse" style="animation-delay:0.2s">●</span><span class="dot-pulse" style="animation-delay:0.4s">●</span></span>';
+                this.box.appendChild(loader);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            removeLoading() {
+                const loader = document.getElementById('chat-loading');
+                if (loader) loader.remove();
+            },
+
+            // --- Add messages to UI ---
+            addUserMessage(text) {
+                const el = document.createElement('div');
+                el.className = 'msg user';
+                el.innerText = text;
+                this.box.appendChild(el);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            addAiMessage(text) {
+                const el = document.createElement('div');
+                el.className = 'msg ai';
+                el.innerText = text;
+                this.box.appendChild(el);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            // --- Set input enabled/disabled state ---
+            setInputEnabled(enabled) {
+                this.input.disabled = !enabled;
+                this.sendBtn.disabled = !enabled;
+                this.sendBtn.style.opacity = enabled ? '1' : '0.4';
+                this.input.style.opacity = enabled ? '1' : '0.5';
+            },
+
+            // --- API call with timeout + exponential backoff ---
+            async callAPI(userText) {
+                // Send only the current message (no history) to minimize token usage
+                const contents = [{ role: 'user', parts: [{ text: userText }] }];
+
+                let lastError = null;
+
+                for (let attempt = 0; attempt < this.MAX_RETRIES; attempt++) {
+                    // Create abort controller for this attempt
+                    this.abortController = new AbortController();
+                    const timeoutId = setTimeout(() => this.abortController.abort(), this.TIMEOUT_MS);
+
+                    try {
+                        const res = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${this.MODEL}:generateContent?key=${this.API_KEY}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                signal: this.abortController.signal,
+                                body: JSON.stringify({
+                                    contents: contents,
+                                    systemInstruction: { parts: [{ text: this.buildSystemPrompt() }] }
+                                })
+                            }
+                        );
+
+                        clearTimeout(timeoutId);
+
+                        // Rate limited — don't retry, just tell user to wait
+                        if (res.status === 429) {
+                            throw new Error('Rate limit reached. Please wait ~60 seconds and try again.');
+                        }
+
+                        if (!res.ok) {
+                            const errBody = await res.text().catch(() => '');
+                            console.error('API Error:', res.status, errBody);
+                            throw new Error(`API error ${res.status}: ${errBody.substring(0, 150)}`);
+                        }
+
+                        const data = await res.json();
+
+                        if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            console.error('Unexpected API response:', data);
+                            // Check for safety block
+                            if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+                                throw new Error('Response blocked by safety filters. Please rephrase your question.');
+                            }
+                            throw new Error('Received an empty response from the AI. Please try again.');
+                        }
+
+                        const aiText = data.candidates[0].content.parts[0].text;
+
+                        return aiText;
+
+                    } catch (e) {
+                        clearTimeout(timeoutId);
+
+                        if (e.name === 'AbortError') {
+                            throw new Error('Request timed out after 30 seconds. Please try again.');
+                        }
+                        if (e.message.includes('API error') || e.message.includes('blocked') || e.message.includes('empty response')) {
+                            throw e;
+                        }
+                        // Network error — retry
+                        lastError = e.message;
+                        if (attempt < this.MAX_RETRIES - 1) {
+                            const backoffMs = Math.pow(2, attempt + 1) * 1000;
+                            await new Promise(r => setTimeout(r, backoffMs));
+                            continue;
+                        }
                     }
-                    break;
                 }
 
-                if (res.status === 429) {
-                    addAiMessage("⚠️ Rate limit reached. The free API tier allows limited requests per minute. Please wait ~30 seconds and try again.");
-                    return;
-                }
+                throw new Error(lastError || 'Failed after multiple retries. Please check your connection.');
+            },
 
-                if (!res.ok) {
-                    const errBody = await res.text();
-                    console.error('API Error:', res.status, errBody);
-                    addAiMessage(`API Error (${res.status}): ${res.statusText}. Check console for details.`);
-                    return;
-                }
-
-                const data = await res.json();
-                if (!data.candidates || !data.candidates[0]) {
-                    console.error('Unexpected API response:', data);
-                    addAiMessage("Unexpected response from API. Check console for details.");
-                    return;
-                }
-                const aiResponse = data.candidates[0].content.parts[0].text;
-
-                // 3. Parse Commands from AI Response & Log
+            // --- Unified command parser with validation ---
+            parseAndExecuteCommands(aiResponse) {
                 let shouldRestart = false;
 
-                if (aiResponse.includes('[SET_TRUCKS:')) {
-                    const match = aiResponse.match(/\[SET_TRUCKS:(\d+)\]/);
-                    if (match) {
-                        document.getElementById('cfg-truck-count').value = match[1];
-                        addToSimLog(`AI adjusted Fleet Size to ${match[1]} trucks.`);
-                        shouldRestart = true;
-                    }
+                // SET_TRUCKS
+                const trucksMatch = aiResponse.match(/\[SET_TRUCKS:(\d+)\]/);
+                if (trucksMatch) {
+                    const val = Math.min(100, Math.max(1, parseInt(trucksMatch[1])));
+                    document.getElementById('cfg-truck-count').value = val;
+                    addToSimLog(`AI adjusted Fleet Size to ${val} trucks.`);
+                    shouldRestart = true;
                 }
 
-                if (aiResponse.includes('[SET_LOADERS:')) {
-                    const match = aiResponse.match(/\[SET_LOADERS:(\d+)\]/);
-                    if (match) {
-                        document.getElementById('cfg-loader-count').value = match[1];
-                        addToSimLog(`AI adjusted Loader Count to ${match[1]} units.`);
-                        shouldRestart = true;
-                    }
+                // SET_LOADERS
+                const loadersMatch = aiResponse.match(/\[SET_LOADERS:(\d+)\]/);
+                if (loadersMatch) {
+                    const val = Math.min(20, Math.max(1, parseInt(loadersMatch[1])));
+                    document.getElementById('cfg-loader-count').value = val;
+                    addToSimLog(`AI adjusted Loader Count to ${val} units.`);
+                    shouldRestart = true;
                 }
 
-                if (aiResponse.includes('[SET_HOURS:')) {
-                    const match = aiResponse.match(/\[SET_HOURS:(\d+)\]/);
-                    if (match) {
-                        document.getElementById('cfg-shift-hours').value = match[1];
-                        addToSimLog(`AI updated Shift Duration to ${match[1]} hours.`);
-                        shouldRestart = true;
-                    }
+                // SET_HOURS
+                const hoursMatch = aiResponse.match(/\[SET_HOURS:(\d+)\]/);
+                if (hoursMatch) {
+                    const val = Math.min(24, Math.max(1, parseInt(hoursMatch[1])));
+                    document.getElementById('cfg-shift-hours').value = val;
+                    addToSimLog(`AI updated Shift Duration to ${val} hours.`);
+                    shouldRestart = true;
                 }
 
+                // RUN_SIM or auto-restart after parameter changes
                 if (aiResponse.includes('[RUN_SIM]') || shouldRestart) {
                     runSimulation();
                     initRender();
@@ -1864,27 +1951,76 @@ Keep it professional, data-driven, and concise. Do not mention the bracketed com
                     animTime = 0;
                     document.getElementById('btn-play').innerText = 'Pause Simulation';
                     startAnimLoop();
-                    addToSimLog(`Simulation restarted with new parameters.`);
+                    addToSimLog('Simulation restarted with new parameters.');
                 }
 
+                // UPLOAD_IMAGE
                 if (aiResponse.includes('[UPLOAD_IMAGE]')) {
                     fileInput.click();
-                    addToSimLog(`User requested to update truck entity graphics.`);
+                    addToSimLog('User requested to update truck entity graphics.');
                 }
 
-                // 4. Display AI Text (Cleaning out the bracket commands for the user)
-                const cleanText = aiResponse.replace(/\[.*?\]/g, '');
-                addAiMessage(cleanText);
+                // Clean bracket commands from display text
+                return aiResponse.replace(/\[.*?\]/g, '').trim();
+            },
 
-            } catch (e) {
-                console.error('Chat error:', e);
-                addAiMessage("Connection error: " + e.message);
+            // --- Main chat handler ---
+            async handleChat() {
+                const query = this.input.value.trim();
+                if (!query || this.isSending) return;
+
+                // Enforce cooldown between requests
+                const now = Date.now();
+                const elapsed = now - this.lastRequestTime;
+                if (elapsed < this.MIN_COOLDOWN_MS) {
+                    const waitSec = Math.ceil((this.MIN_COOLDOWN_MS - elapsed) / 1000);
+                    this.addAiMessage(`Please wait ${waitSec}s before sending another message.`);
+                    return;
+                }
+                this.lastRequestTime = now;
+
+                this.isSending = true;
+                this.setInputEnabled(false);
+                this.input.value = '';
+
+                // Show user message
+                this.addUserMessage(query);
+                this.showLoading();
+
+                try {
+                    const aiResponse = await this.callAPI(query);
+                    this.removeLoading();
+
+                    // Parse commands and get clean display text
+                    const cleanText = this.parseAndExecuteCommands(aiResponse);
+                    if (cleanText) {
+                        this.addAiMessage(cleanText);
+                    }
+
+                } catch (e) {
+                    this.removeLoading();
+                    console.error('Chat error:', e);
+                    this.addAiMessage('⚠️ ' + e.message);
+
+                    // Remove the failed user message from history so it doesn't corrupt context
+                    if (this.conversationHistory.length > 0 &&
+                        this.conversationHistory[this.conversationHistory.length - 1].role === 'user') {
+                        this.conversationHistory.pop();
+                    }
+                } finally {
+                    this.isSending = false;
+                    this.abortController = null;
+                    this.setInputEnabled(true);
+                    this.input.focus();
+                }
             }
-        }
+        };
 
-        if (chatInput) {
-            chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleChat(); });
-        }
+        // Initialize chatbot
+        ChatController.init();
+
+        // Expose addAiMessage globally for image upload handler
+        function addAiMessage(text) { ChatController.addAiMessage(text); }
 
         const playBtn = document.getElementById('btn-play');
         playBtn.onclick = () => {
