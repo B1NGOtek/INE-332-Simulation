@@ -5,34 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Systems Simulator_IE332_Ege Akınbingöl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" fetchpriority="high">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <style id="dynamic-styles">
         :root {
             --primary: #38bdf8;
-            /* Vibrant Cyan */
+            --primary-glow: rgba(56, 189, 248, 0.15);
             --accent: #0ea5e9;
             --success: #2dd4bf;
-            /* Neon Teal */
             --danger: #f43f5e;
-            /* Rose */
+            --warning: #f59e0b;
             --truck-color: #fb923c;
-            /* Bright Orange */
-            --bg: #000000;
-            /* Full Black Background */
-            --panel: #0a0a0a;
-            /* Deep Charcoal Panels */
-            --text-main: #f8fafc;
-            /* Near White */
-            --text-muted: #94a3b8;
-            /* Slate Gray */
-            --border: #262626;
-            /* Dark Border */
-            --input-bg: #171717;
+            --bg: #050507;
+            --panel: rgba(12, 12, 16, 0.75);
+            --panel-solid: #0c0c10;
+            --glass: rgba(255, 255, 255, 0.03);
+            --text-main: #f0f2f5;
+            --text-muted: #7a8599;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            padding: 20px;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            padding: 28px 20px;
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text-main);
             display: flex;
@@ -40,67 +51,166 @@
             align-items: center;
             overflow-x: hidden;
             padding-bottom: 120px;
+            background-image:
+                radial-gradient(ellipse 800px 400px at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 70%),
+                radial-gradient(circle 600px at 80% 60%, rgba(45, 212, 191, 0.02) 0%, transparent 70%);
+            min-height: 100vh;
         }
 
         .header-section {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 32px;
+            position: relative;
         }
 
         h1 {
-            color: var(--primary);
             margin: 0;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.025em;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #38bdf8 0%, #2dd4bf 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.2));
         }
 
         .subtitle {
             color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-top: 5px;
+            font-size: 0.88rem;
+            margin-top: 6px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .header-section::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #38bdf8, #2dd4bf);
+            border-radius: 2px;
+            margin: 14px auto 0;
+        }
+
+        /* --- ANALYTICS PANEL --- */
+        .analytics-panel {
+            background: var(--panel);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            padding: 28px 36px;
+            border-radius: var(--radius-lg);
+            margin-top: 28px;
+            width: 100%;
+            max-width: 1200px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            transition: border-color var(--transition);
+            content-visibility: auto;
+            contain-intrinsic-size: auto 400px;
+        }
+
+        .analytics-panel:hover {
+            border-color: var(--border-hover);
+        }
+
+        .analytics-panel h2 {
+            color: var(--primary);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .analytics-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #chart-container {
+            width: 100%;
+            height: 250px;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            border: 1px solid var(--border);
         }
 
         /* --- CONFIG PANEL --- */
         .config-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            gap: 18px;
             width: 100%;
-            max-width: 860px;
-            margin-bottom: 25px;
+            max-width: 1200px;
+            margin-bottom: 28px;
         }
 
         .card {
-            background: var(--panel);
-            padding: 18px;
-            border-radius: 12px;
+            background: var(--panel-solid);
+            padding: 20px;
+            border-radius: var(--radius-md);
             border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: var(--shadow-md);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 11px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+            contain: content;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            border-radius: 3px 0 0 3px;
+            background: linear-gradient(180deg, var(--primary), var(--success));
+            opacity: 0.7;
+            transition: opacity var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-hover);
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card h3 {
-            margin: 0 0 5px 0;
-            font-size: 0.8rem;
+            margin: 0 0 6px 0;
+            font-size: 0.72rem;
             text-transform: uppercase;
             color: var(--primary);
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
+            padding-bottom: 10px;
+            font-weight: 700;
         }
 
         .input-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
         }
 
         .input-row label {
             color: var(--text-muted);
+            font-weight: 500;
         }
 
         select,
@@ -108,53 +218,93 @@
             background: var(--input-bg);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 7px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            font-family: 'Inter', sans-serif;
             outline: none;
             color-scheme: dark;
             accent-color: var(--primary);
-            transition: all 0.2s;
+            transition: all var(--transition);
         }
 
         input[type="number"] {
-            width: 70px;
+            width: 72px;
             text-align: center;
         }
 
         input:hover,
         select:hover {
-            border-color: #444;
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.06);
         }
 
         input:focus,
         select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: rgba(56, 189, 248, 0.04);
+        }
+
+        select option {
+            background: #000000;
+            color: #0055d4;
         }
 
         /* --- DASHBOARD --- */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 14px;
             width: 100%;
-            max-width: 860px;
-            margin-bottom: 25px;
+            max-width: 1200px;
+            margin-bottom: 28px;
         }
 
         .kpi {
-            background: var(--panel);
-            padding: 15px;
-            border-radius: 12px;
+            background: var(--panel-solid);
+            padding: 18px 14px;
+            border-radius: var(--radius-md);
             text-align: center;
             border: 1px solid var(--border);
-            transition: transform 0.2s;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+            position: relative;
+            overflow: hidden;
+            contain: content;
+        }
+
+        .kpi::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--success);
+            opacity: 0.6;
+        }
+
+        /* Color-coded KPI top bars */
+        .kpi:nth-child(1)::before {
+            background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+        }
+
+        .kpi:nth-child(2)::before {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .kpi:nth-child(3)::before {
+            background: linear-gradient(90deg, #2dd4bf, #5eead4);
+        }
+
+        .kpi:nth-child(4)::before {
+            background: linear-gradient(90deg, #f43f5e, #fb7185);
         }
 
         .kpi:hover {
-            transform: translateY(-2px);
-            border-color: #333;
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         .kpi-val {
@@ -163,32 +313,54 @@
             display: block;
             color: var(--success);
             font-variant-numeric: tabular-nums;
+            transition: color 0.3s;
+        }
+
+        /* Color-coded KPI values */
+        .kpi:nth-child(1) .kpi-val {
+            color: #38bdf8;
+        }
+
+        .kpi:nth-child(2) .kpi-val {
+            color: #fbbf24;
+        }
+
+        .kpi:nth-child(3) .kpi-val {
+            color: #2dd4bf;
+        }
+
+        .kpi:nth-child(4) .kpi-val {
+            color: #fb7185;
         }
 
         .kpi-label {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            margin-top: 6px;
+            margin-top: 8px;
             display: block;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
+            font-weight: 600;
         }
 
         /* --- SIMULATION VIEW --- */
         .canvas-container {
             position: relative;
-            width: 860px;
-            background: #05080f;
-            border-radius: 20px;
-            border: 1px solid #1e293b;
+            width: 1200px;
+            background: #050810;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(30, 41, 59, 0.6);
             overflow: hidden;
-            box-shadow: 0 0 0 1px #0f172a, 0 30px 80px rgba(0, 0, 0, 0.9), inset 0 0 80px rgba(0, 0, 0, 0.8);
+            box-shadow:
+                0 0 0 1px rgba(15, 23, 42, 0.5),
+                0 24px 64px rgba(0, 0, 0, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
             transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             background-image:
-                radial-gradient(ellipse 600px 300px at 50% 40%, rgba(14, 165, 233, 0.04) 0%, transparent 70%),
-                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
+                linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
+            background-size: 40px 40px, 40px 40px;
+            contain: layout style;
         }
 
         .path-svg {
@@ -210,7 +382,7 @@
 
         .path-flow {
             stroke-dasharray: 6 6;
-            animation: dash-flow 0.5s linear infinite;
+            animation: dash-flow 1s linear infinite;
         }
 
         .resource {
@@ -263,7 +435,6 @@
             letter-spacing: 0.12em;
             z-index: 1;
             transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(2px);
         }
 
         .truck {
@@ -316,41 +487,65 @@
         /* --- CONTROLS --- */
         .controls {
             display: flex;
-            gap: 20px;
-            margin-top: 25px;
+            gap: 16px;
+            margin-top: 24px;
             width: 100%;
-            max-width: 1000px;
-            background: var(--panel);
-            padding: 20px;
-            border-radius: 16px;
+            max-width: 1200px;
+            background: var(--panel-solid);
+            padding: 18px 22px;
+            border-radius: var(--radius-lg);
             align-items: center;
             border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            contain: layout style;
         }
 
         .play-btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
             color: #000;
             border: none;
-            padding: 12px 32px;
-            border-radius: 10px;
+            padding: 12px 30px;
+            border-radius: var(--radius-sm);
             font-weight: 800;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.15) 100%);
+            opacity: 0;
+            transition: opacity var(--transition);
         }
 
         .play-btn:hover {
-            background: #7dd3fc;
-            transform: scale(1.02);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.35);
+        }
+
+        .play-btn:hover::after {
+            opacity: 1;
+        }
+
+        .play-btn:active {
+            transform: translateY(0);
         }
 
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 4px;
             outline: none;
             cursor: pointer;
@@ -364,13 +559,14 @@
             width: 36px;
             height: 20px;
             border-radius: 10px;
-            background: var(--primary);
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-            transition: transform 0.1s;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+            transform: scale(1.15);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         .speed-control-container {
@@ -381,11 +577,12 @@
         }
 
         .speed-label {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            font-weight: 800;
+            font-weight: 700;
             white-space: nowrap;
+            letter-spacing: 0.05em;
         }
 
         #speed-val-display {
@@ -394,73 +591,200 @@
             display: inline-block;
         }
 
+        /* --- EXPORT & HEATMAP BTNS --- */
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            position: relative;
+        }
+
+        .secondary-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform var(--transition);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--primary);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+
+        .secondary-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .secondary-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tooltip */
+        .secondary-btn:hover::after {
+            content: attr(title);
+            position: absolute;
+            top: -38px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #f0f2f5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            border: 1px solid var(--border);
+            font-weight: 500;
+            animation: tooltipFade 0.15s ease-out;
+        }
+
+        @keyframes tooltipFade {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- HEATMAP LAYER --- */
+        .heatmap-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            /* Above paths, below trucks */
+            opacity: 0;
+            transition: opacity 0.4s;
+            mix-blend-mode: screen;
+        }
+
+        .sim-area-heatmap .heatmap-layer {
+            opacity: 1;
+        }
+
+        .hm-blob {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(244, 63, 94, 0.55) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+            pointer-events: none;
+        }
+
         /* --- CHATBOT --- */
         .chat-widget {
             position: fixed;
             bottom: 25px;
             right: 25px;
             width: 360px;
-            background: var(--panel);
+            background: var(--panel-solid);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: var(--radius-lg);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
             z-index: 1000;
+            transition: transform var(--transition), opacity var(--transition);
         }
 
         .chat-header {
-            background: #171717;
+            background: rgba(20, 20, 28, 0.95);
             border-bottom: 1px solid var(--border);
-            padding: 14px;
-            font-size: 0.85rem;
-            font-weight: 800;
+            padding: 14px 16px;
+            font-size: 0.84rem;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
             color: var(--primary);
             align-items: center;
+            letter-spacing: 0.01em;
+        }
+
+        .chat-header span::before {
+            content: '⚡';
+            margin-right: 6px;
         }
 
         .chat-msgs {
-            height: 180px;
+            height: 200px;
             overflow-y: auto;
-            padding: 15px;
-            font-size: 0.85rem;
-            background: #050505;
-            color: #cbd5e1;
+            padding: 16px;
+            font-size: 0.84rem;
+            background: rgba(5, 5, 8, 0.9);
+            color: #c8d0dc;
             display: block;
+            scroll-behavior: smooth;
+        }
+
+        .chat-msgs::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-msgs::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-msgs::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
 
         .msg {
             margin-bottom: 12px;
             padding: 10px 14px;
-            border-radius: 12px;
-            line-height: 1.5;
+            border-radius: 14px;
+            line-height: 1.55;
+            font-size: 0.82rem;
+            animation: msgSlideIn 0.25s ease-out;
+        }
+
+        @keyframes msgSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .msg.ai {
-            background: #171717;
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
-            border-bottom-left-radius: 2px;
-            border: 1px solid #222;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
         }
 
         .msg.user {
-            background: var(--primary);
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
             color: #000;
             text-align: right;
             align-self: flex-end;
-            border-bottom-right-radius: 2px;
+            border-bottom-right-radius: 4px;
             font-weight: 600;
         }
 
         .chat-input-area {
             display: flex;
-            padding: 10px;
+            padding: 10px 12px;
             border-top: 1px solid var(--border);
-            background: #111;
+            background: rgba(15, 15, 20, 0.95);
             align-items: center;
+            gap: 8px;
         }
 
         .chat-input-area input {
@@ -470,6 +794,12 @@
             padding: 10px;
             outline: none;
             color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-input-area input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
         }
 
         /* --- SUMMARY MODAL --- */
@@ -479,8 +809,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
             display: none;
             justify-content: center;
             align-items: center;
@@ -488,26 +819,26 @@
         }
 
         .modal-content {
-            background: var(--panel);
+            background: var(--panel-solid);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
+            border-radius: var(--radius-lg);
+            padding: 32px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
             text-align: center;
-            animation: modalFadeIn 0.3s ease-out;
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(16px) scale(0.97);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
@@ -515,50 +846,156 @@
             color: var(--primary);
             margin-top: 0;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
+            padding-bottom: 16px;
+            font-weight: 800;
+            font-size: 1.3rem;
         }
 
         .summary-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
+            gap: 14px;
+            margin: 22px 0;
             text-align: left;
         }
 
         .summary-stat-box {
-            background: #111;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #222;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            transition: border-color var(--transition);
+        }
+
+        .summary-stat-box:hover {
+            border-color: var(--border-hover);
         }
 
         .summary-stat-box .label {
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.04em;
         }
 
         .summary-stat-box .value {
             color: var(--success);
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 800;
-            margin-top: 5px;
+            margin-top: 6px;
         }
 
         .modal-close-btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
             color: #000;
             border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
+            padding: 11px 28px;
+            border-radius: var(--radius-sm);
             font-weight: 800;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 18px;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
         }
 
         .modal-close-btn:hover {
-            background: #7dd3fc;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+                padding-bottom: 150px;
+            }
+
+            .analytics-panel {
+                padding: 15px;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            #analytics-results .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi {
+                padding: 12px;
+            }
+
+            .kpi-val {
+                font-size: 1.3rem;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .play-btn {
+                flex: 1 1 100%;
+                padding: 16px;
+                font-size: 1.1rem;
+            }
+
+            .secondary-btn {
+                flex: 1 1 45%;
+                height: 50px;
+            }
+
+            .controls>div {
+                flex: 1 1 100% !important;
+                margin-left: 0 !important;
+                margin-top: 5px;
+            }
+
+            .canvas-container {
+                zoom: calc((100vw - 20px) / 1200);
+                margin: 0 auto;
+            }
+
+            @supports not (zoom: 1) {
+                .canvas-container {
+                    transform: scale(calc((100vw - 20px) / 1200));
+                    transform-origin: top left;
+                }
+            }
+
+            .chat-widget {
+                width: calc(100vw - 20px);
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .log-timestamp {
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .log-action {
+            color: var(--text-main);
+            flex: 1;
         }
     </style>
 </head>
@@ -569,7 +1006,7 @@
 
     <div class="header-section">
         <h1>Systems Simulator</h1>
-        <div class="subtitle">System Design & Research Lab</div>
+        <div class="subtitle">BadNoize23_//B1NGOtek1312</div>
     </div>
 
     <div class="config-grid">
@@ -603,60 +1040,132 @@
                 <label>Shift Duration (hrs):</label>
                 <input type="number" id="cfg-shift-hours" value="8" min="1" max="24">
             </div>
-        </div>
-
-        <div class="card">
-            <h3>Operational Logic</h3>
-            <div class="input-row">
-                <label>Distribution:</label>
-                <select id="dist-type">
-                    <option value="fixed">Fixed (Ideal)</option>
-                    <option value="exponential" selected>M/M/s (Stochastic)</option>
-                    <option value="uniform">Uniform Variance</option>
-                </select>
-            </div>
             <div class="input-row">
                 <label>Station Cost ($/hr):</label>
                 <input type="number" id="cfg-cost-station" value="35">
             </div>
+        </div>
+
+        <div class="card">
+            <h3>Loading Logic</h3>
             <div class="input-row">
-                <label>Mean Load Time:</label>
-                <input type="number" id="dist-load-avg" value="10">
+                <label>Distribution:</label>
+                <select id="load-dist-type">
+                    <option value="constant">Constant</option>
+                    <option value="normal">Normal</option>
+                    <option value="triangular" selected>Triangular</option>
+                    <option value="uniform">Uniform</option>
+                </select>
             </div>
+            <div class="input-row" id="load-row-load-time">
+                <label id="load-lbl-load-time">Value (Most Likely):</label>
+                <input type="number" id="load-dist-load-avg" value="10">
+            </div>
+            <div class="input-row" id="load-row-stddev" style="display: none;">
+                <label>Standard Deviation:</label>
+                <input type="number" id="load-dist-stddev" value="2" step="0.1">
+            </div>
+            <div class="input-row" id="load-row-min">
+                <label>Minimum:</label>
+                <input type="number" id="load-dist-min" value="0.5" step="0.1">
+            </div>
+            <div class="input-row" id="load-row-max">
+                <label>Maximum:</label>
+                <input type="number" id="load-dist-max" value="15" step="0.1">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Scaling Logic</h3>
+            <div class="input-row">
+                <label>Distribution:</label>
+                <select id="scale-dist-type">
+                    <option value="constant" selected>Constant</option>
+                    <option value="normal">Normal</option>
+                    <option value="triangular">Triangular</option>
+                    <option value="uniform">Uniform</option>
+                </select>
+            </div>
+            <div class="input-row" id="scale-row-load-time">
+                <label id="scale-lbl-load-time">Value:</label>
+                <input type="number" id="scale-dist-load-avg" value="12">
+            </div>
+            <div class="input-row" id="scale-row-stddev" style="display: none;">
+                <label>Standard Deviation:</label>
+                <input type="number" id="scale-dist-stddev" value="2" step="0.1">
+            </div>
+            <div class="input-row" id="scale-row-min" style="display: none;">
+                <label>Minimum:</label>
+                <input type="number" id="scale-dist-min" value="8" step="0.1">
+            </div>
+            <div class="input-row" id="scale-row-max" style="display: none;">
+                <label>Maximum:</label>
+                <input type="number" id="scale-dist-max" value="16" step="0.1">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>AI Configuration</h3>
+            <div class="input-row" style="margin-bottom: 8px;">
+                <label style="flex-shrink: 0; margin-right: 10px;">Gemini API Key:</label>
+                <input type="password" id="cfg-api-key" placeholder="Paste key here" style="flex: 1; min-width: 0;">
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-align: left; line-height: 1.4;">Get a free
+                key from <a href="https://aistudio.google.com/" target="_blank"
+                    style="color: var(--primary); text-decoration: none;">Google AI Studio</a>.<br>Stored securely,
+                locally.</div>
         </div>
     </div>
 
     <div class="dashboard">
         <div class="kpi">
             <span class="kpi-val" id="stat-time">0.0</span>
-            <span class="kpi-label">Simulation Time</span>
+            <span class="kpi-label">⏱ Simulation Time</span>
         </div>
         <div class="kpi">
             <span class="kpi-val" id="stat-avg-wait">0.0</span>
-            <span class="kpi-label">Waiting Trucks (Lq)</span>
+            <span class="kpi-label">⏳ Waiting Trucks (Lq)</span>
         </div>
         <div class="kpi">
             <span class="kpi-val" id="stat-util">0.0%</span>
-            <span class="kpi-label">Loader Util (ρ)</span>
+            <span class="kpi-label">⚙️ Loader Util (ρ)</span>
         </div>
         <div class="kpi">
             <span class="kpi-val" id="stat-total-cost">$0</span>
-            <span class="kpi-label">Total System Cost</span>
+            <span class="kpi-label">💰 Total System Cost</span>
         </div>
     </div>
 
     <div class="canvas-container" id="sim-area">
         <svg class="path-svg" id="anim-path-svg"></svg>
+        <div class="heatmap-layer" id="heatmap-layer">
+            <!-- Heatmap blobs created dynamically -->
+        </div>
         <div id="loader-container"></div>
         <div id="scale-container"></div>
 
-        <div class="queue-zone" id="l-queue-box" style="left: 20px; width: 260px; top: 320px;">Loading Queue</div>
-        <div class="queue-zone" id="s-queue-box" style="left: 440px; width: 220px; top: 320px;">Scale Queue</div>
+        <div class="queue-zone" id="l-queue-box" style="left: 20px; width: 340px; top: 100px;">Loading Queue</div>
+        <div class="queue-zone" id="s-queue-box" style="left: 560px; width: 340px; top: 100px;">Scale Queue</div>
     </div>
 
     <div class="controls">
         <button class="play-btn" id="btn-play">Run Simulation</button>
-        <div style="flex:1; display:flex; align-items:center; gap:15px;">
+        <button class="secondary-btn" id="btn-export-csv" title="Export to CSV"
+            aria-label="Export simulation data to CSV">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        </button>
+        <button class="secondary-btn" id="btn-toggle-heatmap" title="Toggle Congestion Heatmap"
+            aria-label="Toggle congestion heatmap overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                <path
+                    d="M9.824 14.176C10.5 13.5 11 12 11 12s.5 1.5 1.176 2.176C12.85 14.85 14 15 14 16c0 1.104-.896 2-2 2s-2-.896-2-2c0-1 .5-2 1.343-2.657h-.519z" />
+            </svg>
+        </button>
+        <div style="flex:1; display:flex; align-items:center; gap:15px; margin-left: 10px;">
             <input type="range" id="time-slider" min="0" step="0.1" value="0" style="width:100%;">
         </div>
         <div class="speed-control-container">
@@ -670,17 +1179,68 @@
         </div>
     </div>
 
+    <!-- Advanced Statistical Analysis -->
+    <div class="analytics-panel">
+        <h2>Advanced Statistical Analysis (24-Hour Monte Carlo)</h2>
+        <div class="analytics-controls">
+            <button class="play-btn" id="btn-run-analytics">Run 24h Analysis</button>
+            <span style="color:var(--text-muted); font-size:0.85rem;">Replications: <input type="number"
+                    id="replications" value="30" style="min-width: 60px;"></span>
+        </div>
+
+        <div id="analytics-results" style="display: none;">
+            <div class="dashboard" style="margin-bottom: 0; width: 100%; grid-template-columns: repeat(3, 1fr);">
+                <div class="kpi">
+                    <span class="kpi-val" id="res-bottleneck"
+                        style="color: var(--primary); font-size:1.4rem;">Loader</span>
+                    <span class="kpi-label">Bottleneck (>85% Util)</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-val" id="res-wait" style="color: var(--success); font-size:1.4rem;">0.0m</span>
+                    <span class="kpi-label">Average Wait (Wq)</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-val" id="res-cost" style="color: var(--truck-color); font-size:1.4rem;">$0 ±
+                        0%</span>
+                    <span class="kpi-label">Est. Daily Cost (95% CI)</span>
+                </div>
+            </div>
+
+            <div id="chart-container">
+                <canvas id="waitChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-panel" id="log-panel" style="margin-top: 20px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px;">
+            <h2 style="color: var(--warning); margin: 0; font-size: 1.1rem;">📜 System Change Log</h2>
+            <button onclick="clearSimLog()"
+                style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;">
+                Clear History
+            </button>
+        </div>
+        <div id="sim-log-entries"
+            style="max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem; color: var(--text-muted); padding-right: 5px;">
+            <div style="color: var(--success); opacity: 0.7;">[SYSTEM] Log initialized. Awaiting AI commands...</div>
+        </div>
+    </div>
+
     <div class="chat-widget" id="chat-widget">
         <div class="chat-header">
             <span>Optimization AI</span>
             <button id="chat-min"
-                style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 1.2rem; font-weight: bold; line-height: 1;">—</button>
+                style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 1.2rem; font-weight: bold; line-height: 1;">+</button>
         </div>
-        <div class="chat-msgs" id="chat-messages">
+        <div class="chat-msgs" id="chat-messages" style="display:none;">
             <div class="msg ai">Welcome to the Systems Simulator. How can I help you?</div>
         </div>
-        <div class="chat-input-area" id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Query simulation data...">
+        <div class="chat-input-area" id="chat-input-area" style="display:none;">
+            <input type="text" id="chat-input" placeholder="Query simulation data..." maxlength="500">
+            <button id="chat-send-btn"
+                style="background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #000; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;"
+                aria-label="Send message">▶</button>
         </div>
     </div>
 
@@ -715,12 +1275,75 @@
     <script>
         // --- New Global for Custom Image ---
         let customTruckImg = null;
+        function setupDistLogic(prefix) {
+            const distTypeSelect = document.getElementById(`${prefix}-dist-type`);
+            if (distTypeSelect) {
+                distTypeSelect.addEventListener('change', function () {
+                    const val = this.value;
+                    const rowLoad = document.getElementById(`${prefix}-row-load-time`);
+                    const lblLoad = document.getElementById(`${prefix}-lbl-load-time`);
+                    const rowMin = document.getElementById(`${prefix}-row-min`);
+                    const rowMax = document.getElementById(`${prefix}-row-max`);
+                    const rowStd = document.getElementById(`${prefix}-row-stddev`);
 
-        function getStochasticTime(base, type) {
-            if (type === 'fixed') return base;
-            if (type === 'uniform') return base * (0.7 + Math.random() * 0.6);
-            if (type === 'exponential') return -base * Math.log(Math.random() || 0.0001);
-            return base;
+                    rowLoad.style.display = 'flex';
+                    rowMin.style.display = 'none';
+                    rowMax.style.display = 'none';
+                    rowStd.style.display = 'none';
+
+                    if (val === 'constant') {
+                        lblLoad.innerText = 'Value:';
+                    } else if (val === 'normal') {
+                        lblLoad.innerText = 'Mean Value:';
+                        rowStd.style.display = 'flex';
+                    } else if (val === 'triangular') {
+                        lblLoad.innerText = 'Value (Most Likely):';
+                        rowMin.style.display = 'flex';
+                        rowMax.style.display = 'flex';
+                    } else if (val === 'uniform') {
+                        rowLoad.style.display = 'none';
+                        rowMin.style.display = 'flex';
+                        rowMax.style.display = 'flex';
+                    }
+                });
+                distTypeSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupDistLogic('load');
+            setupDistLogic('scale');
+        });
+
+        function getStochasticTime(config) {
+            let type = config.type;
+            let avg = config.avg;
+
+            if (type === 'fixed' || type === 'constant') return avg;
+
+            if (type === 'normal') {
+                let u = 1 - Math.random();
+                let v = Math.random();
+                let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+                return Math.max(0.1, avg + (config.std * z));
+            }
+            if (type === 'uniform') {
+                return config.min + Math.random() * (config.max - config.min);
+            }
+            if (type === 'triangular') {
+                let mode = avg;
+                let u = Math.random();
+                let min = config.min;
+                let max = config.max;
+                let F = (max === min) ? 0 : (mode - min) / (max - min);
+                if (max === min) return mode;
+                if (u <= F) {
+                    return min + Math.sqrt(u * (max - min) * (mode - min));
+                } else {
+                    return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+                }
+            }
+            return avg;
         }
 
         // --- Cached DOM Elements to prevent repeated querying ---
@@ -738,6 +1361,9 @@
         let MAX_SIM_TIME = 480;
         let lastSimIndex = 0; // Optimization: History array index
         let runConfig = { loaderCount: 1, scaleCount: 1, truckCount: 1, tCost: 0, sCost: 0, hourlyCost: 0 };
+        let renderFrameCount = 0;
+        let animLoopRunning = false;
+        let cachedHmLq = null, cachedHmSq = null;
 
         let pathTop = 60;
         let pathBottom = 320;
@@ -764,15 +1390,16 @@
             const maxStations = Math.max(loaderCount, scaleCount);
             const requiredStationsHeight = maxStations * 70;
             pathBottom = pathTop + requiredStationsHeight + 40;
-            const containerHeight = pathBottom + 100;
+            const containerHeight = pathTop + 40 + requiredStationsHeight + 50;
 
             const simArea = document.getElementById('sim-area');
             const lQueueBox = document.getElementById('l-queue-box');
             const sQueueBox = document.getElementById('s-queue-box');
 
             simArea.style.height = containerHeight + 'px';
-            lQueueBox.style.top = pathBottom + 'px';
-            sQueueBox.style.top = pathBottom + 'px';
+            // Position queues at the same level as the first row of stations
+            lQueueBox.style.top = (pathTop + 40) + 'px';
+            sQueueBox.style.top = (pathTop + 40) + 'px';
             // Compute station spacing FIRST so SVG uses correct values
             lSpacing = requiredStationsHeight / loaderCount;
             sSpacing = requiredStationsHeight / scaleCount;
@@ -780,50 +1407,61 @@
 
 
             // ──── Coordinates for full path circuit ────────────────────────
-            var LD_L = 300, LD_W = 86, SC_L = 680, SC_W = 86;
+            var LD_L = 420, LD_W = 90, SC_L = 960, SC_W = 90;
             var LD_CY_1 = pathTop + 40 + 27;
             var SC_CY_1 = pathTop + 40 + 27;
 
-            var LQ_R = 260;
-            var LQ_CY = pathBottom + 27;
+            // Queues are now at station level
+            var LQ_CY = pathTop + 40 + 27;
+            var LQ_R = 360;
 
-            var SQ_L = 460;
-            var SQ_R = 640;
-            var SQ_CY = pathBottom + 27;
+            var SQ_L = 560;
+            var SQ_R = 900;
+            var SQ_CY = pathTop + 40 + 27;
 
-            var RETURN_X = 800;
+            var RETURN_X = 1150;
             var RETURN_TOP = pathTop - 20;
             var DESCENT_X = 40;
             var R = 16;
 
-            // Segment 1: LQ right (260) → up spine → right to Loaders
             var p1_arr = [];
             var p2_arr = [];
             var p3_arr = [];
             var p4_arr = [];
             var PAD = 4;
 
-            // Segment 1: LQ right (260) → up spine → right to Loaders
-            p1_arr.push(`M ${LQ_R} ${LQ_CY} L ${LQ_R + 10} ${LQ_CY} a${R},${R} 0 0 0 ${R},${-R} L ${LQ_R + R + 10} ${LD_CY_1 + R} a${R},${R} 0 0 1 ${R},${-R} L ${LD_L - PAD} ${LD_CY_1}`);
+            // Segment 1: LQ → Loaders
+            // First loader: straight horizontal (same Y)
+            p1_arr.push(`M ${LQ_R} ${LQ_CY} L ${LD_L - PAD} ${LD_CY_1}`);
+            // Additional loaders: branch down from main path via spine
+            var LSPINE1 = 390;
             for (let i = 1; i < loaderCount; i++) {
-                p1_arr.push(`M ${LQ_R + R + 10} ${pathTop + 40 + i * lSpacing + 27} L ${LD_L - PAD} ${pathTop + 40 + i * lSpacing + 27}`);
+                let yy = pathTop + 40 + i * lSpacing + 27;
+                p1_arr.push(`M ${LSPINE1 - R} ${LQ_CY} a${R},${R} 0 0 1 ${R},${R} L ${LSPINE1} ${yy - R} a${R},${R} 0 0 0 ${R},${R} L ${LD_L - PAD} ${yy}`);
             }
 
-            // Segment 2: Loaders right (386) → right spine (420) → down → right to SQ left (460)
+            // Segment 2: Loaders → SQ
             var LD_RIGHT = LD_L + LD_W;
-            var RSPINE = LD_RIGHT + 34; // 420
-            p2_arr.push(`M ${LD_RIGHT + PAD} ${LD_CY_1} L ${RSPINE - R} ${LD_CY_1} a${R},${R} 0 0 1 ${R},${R} L ${RSPINE} ${SQ_CY - R} a${R},${R} 0 0 0 ${R},${R} L ${SQ_L - PAD} ${SQ_CY}`);
+            // First loader: straight horizontal (same Y)
+            p2_arr.push(`M ${LD_RIGHT + PAD} ${LD_CY_1} L ${SQ_L - PAD} ${SQ_CY}`);
+            // Additional loaders: go right, curve up to SQ level via spine
+            var RSPINE2 = 535;
             for (let i = 1; i < loaderCount; i++) {
-                p2_arr.push(`M ${LD_RIGHT + PAD} ${pathTop + 40 + i * lSpacing + 27} L ${RSPINE} ${pathTop + 40 + i * lSpacing + 27}`);
+                let yy = pathTop + 40 + i * lSpacing + 27;
+                p2_arr.push(`M ${LD_RIGHT + PAD} ${yy} L ${RSPINE2 - R} ${yy} a${R},${R} 0 0 0 ${R},${-R} L ${RSPINE2} ${SQ_CY + R} a${R},${R} 0 0 1 ${R},${-R} L ${SQ_L - PAD} ${SQ_CY}`);
             }
 
-            // Segment 3: SQ right (640) → up spine → right to Scales
-            p3_arr.push(`M ${SQ_R} ${SQ_CY} L ${SQ_R + 10} ${SQ_CY} a${R},${R} 0 0 0 ${R},${-R} L ${SQ_R + R + 10} ${SC_CY_1 + R} a${R},${R} 0 0 1 ${R},${-R} L ${SC_L - PAD} ${SC_CY_1}`);
+            // Segment 3: SQ → Scales
+            // First scale: straight horizontal (same Y)
+            p3_arr.push(`M ${SQ_R} ${SQ_CY} L ${SC_L - PAD} ${SC_CY_1}`);
+            // Additional scales: branch down from SQ level via spine
+            var RSPINE3 = 930;
             for (let i = 1; i < scaleCount; i++) {
-                p3_arr.push(`M ${SQ_R + R + 10} ${pathTop + 40 + i * sSpacing + 27} L ${SC_L - PAD} ${pathTop + 40 + i * sSpacing + 27}`);
+                let yy = pathTop + 40 + i * sSpacing + 27;
+                p3_arr.push(`M ${RSPINE3 - R} ${SQ_CY} a${R},${R} 0 0 1 ${R},${R} L ${RSPINE3} ${yy - R} a${R},${R} 0 0 0 ${R},${R} L ${SC_L - PAD} ${yy}`);
             }
 
-            // Segment 4: Scales right (766) → up spine (800) → left → down to LQ left (40)
+            // Segment 4: Scales → return path → LQ
             var SC_RIGHT = SC_L + SC_W;
             var SC_CY_LAST = pathTop + 40 + (scaleCount - 1) * sSpacing + 27;
             var RETURN_Y = RETURN_TOP;
@@ -879,9 +1517,23 @@
                 '<path d="' + joint_p3 + '" fill="none" stroke="#ccfbf1" stroke-width="2" class="path-flow"/>' +
                 '<path d="' + joint_p4 + '" fill="none" stroke="#e0f2fe" stroke-width="2" class="path-flow"/>';
 
-            const avgLoad = parseFloat(document.getElementById('dist-load-avg').value);
+            const loadConfig = {
+                type: document.getElementById('load-dist-type').value,
+                avg: parseFloat(document.getElementById('load-dist-load-avg').value) || 10,
+                std: parseFloat(document.getElementById('load-dist-stddev').value) || 0,
+                min: parseFloat(document.getElementById('load-dist-min').value) || 0,
+                max: parseFloat(document.getElementById('load-dist-max').value) || 0
+            };
+
+            const scaleConfig = {
+                type: document.getElementById('scale-dist-type').value,
+                avg: parseFloat(document.getElementById('scale-dist-load-avg').value) || 12,
+                std: parseFloat(document.getElementById('scale-dist-stddev').value) || 0,
+                min: parseFloat(document.getElementById('scale-dist-min').value) || 0,
+                max: parseFloat(document.getElementById('scale-dist-max').value) || 0
+            };
+
             const travelBase = parseFloat(document.getElementById('cfg-travel-base').value);
-            const distType = document.getElementById('dist-type').value;
 
             const lContainer = document.getElementById('loader-container');
             const sContainer = document.getElementById('scale-container');
@@ -893,7 +1545,7 @@
                 div.className = 'resource';
                 div.setAttribute('data-icon', '⛏');
                 div.innerText = 'LD ' + (i + 1);
-                div.style.left = '300px';
+                div.style.left = '420px';
                 div.style.top = (pathTop + 40 + i * lSpacing) + 'px';
                 lContainer.appendChild(div);
             }
@@ -903,7 +1555,7 @@
                 div.className = 'resource';
                 div.setAttribute('data-icon', '⚖');
                 div.innerText = 'SC ' + (i + 1);
-                div.style.left = '680px';
+                div.style.left = '960px';
                 div.style.top = (pathTop + 40 + i * sSpacing) + 'px';
                 sContainer.appendChild(div);
             }
@@ -916,14 +1568,26 @@
             let SQ = trucks.slice(Math.max(1, truckCount - scaleCount));
             SQ.forEach(t => t.state = 'SQ');
 
+            // Build Dynamic Heatmap Blobs
+            const hmLayer = document.getElementById('heatmap-layer');
+            hmLayer.innerHTML = `
+                <div class="hm-blob" id="hm-lq" style="left: -20px; top: ${pathTop}px; width: 440px; height: 160px;"></div>
+                <div class="hm-blob" id="hm-sq" style="left: 530px; top: ${pathTop}px; width: 420px; height: 160px;"></div>
+            `;
+
             let loaders = Array(loaderCount).fill(null);
             let scales = Array(scaleCount).fill(null);
             let events = [];
             simHistory = [];
 
             function addEv(t, type, obj) {
-                events.push({ t, type, obj });
-                events.sort((a, b) => a.t - b.t);
+                // Binary insertion: O(n) instead of O(n·log·n) sort
+                let lo = 0, hi = events.length;
+                while (lo < hi) {
+                    let mid = (lo + hi) >>> 1;
+                    if (events[mid].t <= t) lo = mid + 1; else hi = mid;
+                }
+                events.splice(lo, 0, { t, type, obj });
             }
 
             let stats = { busyLoaders: 0, busyScale: 0, waitSum: 0, lastT: 0 };
@@ -937,12 +1601,12 @@
 
                 simHistory.push({
                     t,
-                    trucks: JSON.parse(JSON.stringify(trucks)),
+                    trucks: trucks.map(tr => ({ id: tr.id, state: tr.state, stateStart: tr.stateStart, stateEnd: tr.stateEnd, resId: tr.resId, totalWait: tr.totalWait })),
                     LQ: LQ.map(tr => tr.id),
                     SQ: SQ.map(tr => tr.id),
                     loaders: loaders.map(l => l ? l.id : null),
                     scales: scales.map(s => s ? s.id : null),
-                    stats: JSON.parse(JSON.stringify(stats))
+                    stats: { busyLoaders: stats.busyLoaders, busyScale: stats.busyScale, waitSum: stats.waitSum, lastT: stats.lastT }
                 });
             }
 
@@ -951,7 +1615,7 @@
                     if (!loaders[i] && LQ.length) {
                         let tr = LQ.shift(); loaders[i] = tr;
                         tr.state = 'L'; tr.resId = i; tr.stateStart = t;
-                        let dur = getStochasticTime(avgLoad, distType);
+                        let dur = getStochasticTime(loadConfig);
                         tr.stateEnd = t + dur;
                         addEv(t + dur, 'EL', tr);
                     }
@@ -960,7 +1624,7 @@
                     if (!scales[i] && SQ.length) {
                         let tr = SQ.shift(); scales[i] = tr;
                         tr.state = 'S'; tr.resId = i; tr.stateStart = t;
-                        let dur = getStochasticTime(12, distType);
+                        let dur = getStochasticTime(scaleConfig);
                         tr.stateEnd = t + dur;
                         addEv(t + dur, 'ES', tr);
                     }
@@ -977,7 +1641,7 @@
                 } else if (ev.type === 'ES') {
                     scales[ev.obj.resId] = null;
                     ev.obj.state = 'T'; ev.obj.stateStart = ev.t;
-                    let dur = getStochasticTime(travelBase, distType);
+                    let dur = travelBase;
                     ev.obj.stateEnd = ev.t + dur;
                     addEv(ev.t + dur, 'ET', ev.obj);
                 } else if (ev.type === 'ET') {
@@ -999,15 +1663,24 @@
                 d.className = 'truck';
                 d.innerText = i;
                 if (customTruckImg) d.style.backgroundImage = `url(${customTruckImg})`;
-                d._x = 100; d._y = 100; d._angle = 0;
+                d._x = 100; d._y = 100; d._angle = 0; d._lt = -10;
                 area.appendChild(d);
                 truckEls[i] = d;
+            }
+        }
+
+        function startAnimLoop() {
+            if (!animLoopRunning) {
+                animLoopRunning = true;
+                lastFrame = performance.now();
+                requestAnimationFrame(render);
             }
         }
 
         function render(now) {
             let delta = (now - lastFrame) / 1000;
             lastFrame = now;
+            renderFrameCount++;
 
             if (isPlaying) {
                 animTime += delta * simSpeed;
@@ -1033,34 +1706,37 @@
                     else break;
                 }
 
-                domStatTime.innerText = animTime.toFixed(1) + 'm';
-                let wait = animTime > 0 ? (s.stats.waitSum / animTime) : 0;
-                domStatAvgWait.innerText = wait.toFixed(2);
+                // Throttle KPI text updates to every 5th frame
+                if (renderFrameCount % 5 === 0) {
+                    domStatTime.innerText = animTime.toFixed(1) + 'm';
+                    let wait = animTime > 0 ? (s.stats.waitSum / animTime) : 0;
+                    domStatAvgWait.innerText = wait.toFixed(2);
 
-                let util = animTime > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * animTime)) * 100 : 0;
-                domStatUtil.innerText = Math.min(100, util).toFixed(1) + '%';
+                    let util = animTime > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * animTime)) * 100 : 0;
+                    domStatUtil.innerText = Math.min(100, util).toFixed(1) + '%';
 
-                let totalCost = runConfig.hourlyCost * (animTime / 60);
-                domStatTotalCost.innerText = '$' + totalCost.toFixed(0);
+                    let totalCost = runConfig.hourlyCost * (animTime / 60);
+                    domStatTotalCost.innerText = '$' + totalCost.toFixed(0);
+                }
 
                 s.trucks.forEach(t => {
                     let tx, ty, targetAngle = null;
                     const truckSpacing = 48;
 
-                    if (t.state === 'L') { tx = 343; ty = pathTop + 40 + t.resId * lSpacing + 27; targetAngle = 0; }
-                    else if (t.state === 'S') { tx = 723; ty = pathTop + 40 + t.resId * sSpacing + 27; targetAngle = 0; }
-                    else if (t.state === 'LQ') { tx = 220 - s.LQ.indexOf(t.id) * truckSpacing; ty = pathBottom + 27; targetAngle = 0; }
-                    else if (t.state === 'SQ') { tx = 620 - s.SQ.indexOf(t.id) * truckSpacing; ty = pathBottom + 27; targetAngle = 0; }
+                    if (t.state === 'L') { tx = 465; ty = pathTop + 40 + t.resId * lSpacing + 27; targetAngle = 0; }
+                    else if (t.state === 'S') { tx = 1005; ty = pathTop + 40 + t.resId * sSpacing + 27; targetAngle = 0; }
+                    else if (t.state === 'LQ') { tx = 330 - s.LQ.indexOf(t.id) * truckSpacing; ty = pathTop + 40 + 27; targetAngle = 0; }
+                    else if (t.state === 'SQ') { tx = 870 - s.SQ.indexOf(t.id) * truckSpacing; ty = pathTop + 40 + 27; targetAngle = 0; }
                     else if (t.state === 'T') {
                         let p = (animTime - t.stateStart) / (t.stateEnd - t.stateStart || 1);
                         p = Math.max(0, Math.min(1, p));
 
                         let cy = pathTop + 40 + t.resId * sSpacing + 27;
-                        let SCX_START = 766; // SC_RIGHT
-                        let RETURN_X = 800;
+                        let SCX_START = 1050; // SC_RIGHT
+                        let RETURN_X = 1150;
                         let T_TOP = pathTop - 20;
                         let LQ_L = 40;
-                        let LQ_CY_T = pathBottom + 27;
+                        let LQ_CY_T = pathTop + 40 + 27; // queues now at station level
 
                         let R_CURVE = 16;
                         let leg0 = RETURN_X - SCX_START; // right from scale to spine
@@ -1102,8 +1778,22 @@
                         el.style.transform = `translate(${el._x}px, ${el._y}px) rotate(${el._angle}deg)`;
                     }
                 });
+
+                // Update heatmap dynamically (use cached refs)
+                if (cachedHmLq && cachedHmSq) {
+                    const lqRatio = Math.min(1, s.LQ.length / 5);
+                    const sqRatio = Math.min(1, s.SQ.length / 5);
+                    cachedHmLq.style.opacity = Math.max(0, lqRatio - 0.1);
+                    cachedHmSq.style.opacity = Math.max(0, sqRatio - 0.1);
+                }
             }
-            requestAnimationFrame(render);
+
+            // Idle-aware loop: only continue if playing or slider is being scrubbed
+            if (isPlaying) {
+                requestAnimationFrame(render);
+            } else {
+                animLoopRunning = false;
+            }
         }
 
         // --- Summary Modal Logic ---
@@ -1126,28 +1816,12 @@
             modal.style.display = 'flex';
         }
 
-        // --- Chatbot Logic ---
-        const chatInput = document.getElementById('chat-input');
-        const chatBox = document.getElementById('chat-messages');
-        const chatMinBtn = document.getElementById('chat-min');
-        const chatInputArea = document.getElementById('chat-input-area');
-
-        if (chatMinBtn) {
-            chatMinBtn.onclick = () => {
-                const isHidden = chatBox.style.display === 'none';
-                chatBox.style.display = isHidden ? 'block' : 'none';
-                chatInputArea.style.display = isHidden ? 'flex' : 'none';
-                chatMinBtn.innerText = isHidden ? '—' : '+';
-            };
-        }
-
         // --- Image Upload Handler ---
         const fileInput = document.getElementById('truck-image-upload');
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
                 customTruckImg = URL.createObjectURL(file);
-                // Immediately update existing trucks
                 Object.values(truckEls).forEach(el => {
                     el.style.backgroundImage = `url(${customTruckImg})`;
                     el.style.backgroundAlpha = "0.8";
@@ -1156,95 +1830,439 @@
             }
         };
 
-        // --- Helper to add AI messages manually ---
-        function addAiMessage(text) {
-            const aiMsg = document.createElement('div');
-            aiMsg.className = 'msg ai';
-            aiMsg.innerText = text;
-            chatBox.appendChild(aiMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // --- Log Helper ---
+        function addToSimLog(action) {
+            const logContainer = document.getElementById('sim-log-entries');
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" +
+                now.getMinutes().toString().padStart(2, '0') + ":" +
+                now.getSeconds().toString().padStart(2, '0');
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-timestamp">[${timeStr}]</span>
+                               <span class="log-action">${action}</span>`;
+
+            logContainer.prepend(entry);
         }
 
-        // --- UPGRADED Chat Handler with AI Simulation Control ---
-        async function handleChat() {
-            const query = chatInput.value.trim();
-            if (!query) return;
+        function clearSimLog() {
+            const logContainer = document.getElementById('sim-log-entries');
+            logContainer.style.opacity = '0';
+            setTimeout(() => {
+                logContainer.innerHTML = '<div style="color: var(--success); opacity: 0.7;">[SYSTEM] Log cleared. Awaiting new data...</div>';
+                logContainer.style.opacity = '1';
+            }, 200);
+            addToSimLog("User manually cleared the system log history.");
+        }
 
-            // 1. Display User Message
-            const uMsg = document.createElement('div');
-            uMsg.className = 'msg user';
-            uMsg.innerText = query;
-            chatBox.appendChild(uMsg);
-            chatInput.value = '';
+        // Inject loading dots CSS
+        if (!document.getElementById('chat-dot-pulse-style')) {
+            const style = document.createElement('style');
+            style.id = 'chat-dot-pulse-style';
+            style.textContent = `
+                @keyframes dotPulse {
+                    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+                    40% { opacity: 1; transform: scale(1.2); }
+                }
+                .dot-pulse {
+                    display: inline-block;
+                    color: var(--primary);
+                    font-size: 0.9rem;
+                    animation: dotPulse 1.2s ease-in-out infinite;
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
-            // 2. Prepare System Instructions for "Autonomous" Control
-            const systemPrompt = `You are an IE Systems Consultant. 
-            You can control the simulation by including commands in your response.
-            Current Stats: Util: ${document.getElementById('stat-util').innerText}, Cost: ${document.getElementById('stat-total-cost').innerText}.
-            
-            COMMANDS YOU CAN USE (Include these exactly in your text):
-            [SET_TRUCKS:n] - Changes truck count
-            [SET_LOADERS:n] - Changes loader count
-            [RUN_SIM] - Restarts the simulation with current values
-            [UPLOAD_IMAGE] - Opens the file picker for the user to change truck graphics
-            
-            Example: "I will optimize your fleet. [SET_TRUCKS:10] [RUN_SIM]"`;
+        // --- Chatbot Logic (Stable Rewrite) ---
+        const ChatController = {
+            input: document.getElementById('chat-input'),
+            box: document.getElementById('chat-messages'),
+            minBtn: document.getElementById('chat-min'),
+            inputArea: document.getElementById('chat-input-area'),
+            sendBtn: document.getElementById('chat-send-btn'),
+            isSending: false,
+            abortController: null,
+            conversationHistory: [],
+            lastRequestTime: 0,
+            getAPIKey() {
+                const keyInput = document.getElementById('cfg-api-key');
+                const keyVal = keyInput ? keyInput.value.trim() : '';
+                if (keyVal) {
+                    localStorage.setItem('gemini_api_key', keyVal);
+                    return keyVal;
+                }
+                return localStorage.getItem('gemini_api_key') || '';
+            },
+            MODEL: 'gemini-2.5-flash',
+            TIMEOUT_MS: 30000,
+            MAX_RETRIES: 1,
+            MAX_HISTORY: 0, // Single-shot mode: no history to minimize tokens
+            MIN_COOLDOWN_MS: 15000, // 15s minimum between requests
 
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_API_KEY`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: query }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] }
-                    })
-                });
-
-                const data = await res.json();
-                const aiResponse = data.candidates[0].content.parts[0].text;
-
-                // 3. Parse Commands from AI Response
-                if (aiResponse.includes('[UPLOAD_IMAGE]')) {
-                    fileInput.click();
+            init() {
+                const savedKey = localStorage.getItem('gemini_api_key');
+                const keyInput = document.getElementById('cfg-api-key');
+                if (savedKey && keyInput) {
+                    keyInput.value = savedKey;
                 }
 
+                // Minimize/expand toggle
+                if (this.minBtn) {
+                    this.minBtn.onclick = () => {
+                        const isHidden = this.box.style.display === 'none';
+                        this.box.style.display = isHidden ? 'block' : 'none';
+                        this.inputArea.style.display = isHidden ? 'flex' : 'none';
+                        this.minBtn.innerText = isHidden ? '—' : '+';
+                        if (isHidden) this.input.focus();
+                    };
+                }
+
+                // Enter key to send
+                if (this.input) {
+                    this.input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.handleChat();
+                    });
+                }
+
+                // Send button
+                if (this.sendBtn) {
+                    this.sendBtn.onclick = () => this.handleChat();
+                }
+            },
+
+            // --- Build system prompt with live simulation data ---
+            buildSystemPrompt() {
+                return `You are an IE332 simulation consultant. Be concise (under 80 words).
+Current config: Trucks=${document.getElementById('cfg-truck-count').value}, Loaders=${document.getElementById('cfg-loader-count').value}, Scales=${document.getElementById('cfg-scale-count').value}, ShiftHrs=${document.getElementById('cfg-shift-hours').value}, TruckCost=$${document.getElementById('cfg-cost-truck').value}/hr, StationCost=$${document.getElementById('cfg-cost-station').value}/hr, TravelSpeed=${document.getElementById('cfg-travel-base').value}min, LoadTime=${document.getElementById('load-dist-load-avg').value}min, LoadDist=${document.getElementById('load-dist-type').value}, ScaleTime=${document.getElementById('scale-dist-load-avg').value}min, ScaleDist=${document.getElementById('scale-dist-type').value}, Speed=${document.getElementById('speed-slider').value}x.
+Stats: Util=${document.getElementById('stat-util').innerText}, Wait=${document.getElementById('stat-avg-wait').innerText}, Cost=${document.getElementById('stat-total-cost').innerText}.
+
+CRITICAL: To change parameters, you MUST include these exact bracket commands (they are parsed by the system):
+[SET_TRUCKS:n] [SET_LOADERS:n] [SET_SCALES:n] [SET_HOURS:n] [SET_TRUCK_COST:n] [SET_STATION_COST:n] [SET_TRAVEL_SPEED:n] [SET_LOAD_TIME:n] [SET_LOAD_DIST:constant|normal|triangular|uniform] [SET_SCALE_TIME:n] [SET_SCALE_DIST:constant|normal|triangular|uniform] [SET_SPEED:n] [RUN_SIM] [UPLOAD_IMAGE]
+Example: "[SET_TRUCKS:4] [SET_LOADERS:3] I've updated fleet to 4 trucks with 3 loaders."
+Bracket commands are hidden from user.
+IMPORTANT: After changing parameters, do NOT include [RUN_SIM]. Instead ask the user if they want to run the simulation or change other values first. Suggest related parameters they might want to adjust and give optimization tips based on IE principles.
+Only use [RUN_SIM] when the user explicitly asks to run/start the simulation.
+Optimize target: 75-85% loader utilization.`;
+            },
+
+            // --- Show a typing/loading indicator ---
+            showLoading() {
+                const loader = document.createElement('div');
+                loader.className = 'msg ai';
+                loader.id = 'chat-loading';
+                loader.innerHTML = '<span style="display:inline-flex;gap:4px;"><span class="dot-pulse">●</span><span class="dot-pulse" style="animation-delay:0.2s">●</span><span class="dot-pulse" style="animation-delay:0.4s">●</span></span>';
+                this.box.appendChild(loader);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            removeLoading() {
+                const loader = document.getElementById('chat-loading');
+                if (loader) loader.remove();
+            },
+
+            // --- Add messages to UI ---
+            addUserMessage(text) {
+                const el = document.createElement('div');
+                el.className = 'msg user';
+                el.innerText = text;
+                this.box.appendChild(el);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            addAiMessage(text) {
+                const el = document.createElement('div');
+                el.className = 'msg ai';
+                el.innerText = text;
+                this.box.appendChild(el);
+                this.box.scrollTop = this.box.scrollHeight;
+            },
+
+            // --- Set input enabled/disabled state ---
+            setInputEnabled(enabled) {
+                this.input.disabled = !enabled;
+                this.sendBtn.disabled = !enabled;
+                this.sendBtn.style.opacity = enabled ? '1' : '0.4';
+                this.input.style.opacity = enabled ? '1' : '0.5';
+            },
+
+            // --- API call with timeout + exponential backoff ---
+            async callAPI(userText) {
+                const apiKey = this.getAPIKey();
+                if (!apiKey) {
+                    throw new Error('Please enter your Gemini API key in the AI Configuration panel above.');
+                }
+
+                // Send only the current message (no history) to minimize token usage
+                const contents = [{ role: 'user', parts: [{ text: userText }] }];
+
+                let lastError = null;
+
+                for (let attempt = 0; attempt < this.MAX_RETRIES; attempt++) {
+                    // Create abort controller for this attempt
+                    this.abortController = new AbortController();
+                    const timeoutId = setTimeout(() => this.abortController.abort(), this.TIMEOUT_MS);
+
+                    try {
+                        const res = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${this.MODEL}:generateContent?key=${apiKey}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                signal: this.abortController.signal,
+                                body: JSON.stringify({
+                                    contents: contents,
+                                    systemInstruction: { parts: [{ text: this.buildSystemPrompt() }] }
+                                })
+                            }
+                        );
+
+                        clearTimeout(timeoutId);
+
+                        // Rate limited — don't retry, just tell user to wait
+                        if (res.status === 429) {
+                            throw new Error('Rate limit reached. Please wait ~60 seconds and try again.');
+                        }
+
+                        if (!res.ok) {
+                            const errBody = await res.text().catch(() => '');
+                            console.error('API Error:', res.status, errBody);
+                            throw new Error(`API error ${res.status}: ${errBody.substring(0, 150)}`);
+                        }
+
+                        const data = await res.json();
+
+                        if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            console.error('Unexpected API response:', data);
+                            // Check for safety block
+                            if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+                                throw new Error('Response blocked by safety filters. Please rephrase your question.');
+                            }
+                            throw new Error('Received an empty response from the AI. Please try again.');
+                        }
+
+                        const aiText = data.candidates[0].content.parts[0].text;
+
+                        return aiText;
+
+                    } catch (e) {
+                        clearTimeout(timeoutId);
+
+                        if (e.name === 'AbortError') {
+                            throw new Error('Request timed out after 30 seconds. Please try again.');
+                        }
+                        if (e.message.includes('API error') || e.message.includes('blocked') || e.message.includes('empty response')) {
+                            throw e;
+                        }
+                        // Network error — retry
+                        lastError = e.message;
+                        if (attempt < this.MAX_RETRIES - 1) {
+                            const backoffMs = Math.pow(2, attempt + 1) * 1000;
+                            await new Promise(r => setTimeout(r, backoffMs));
+                            continue;
+                        }
+                    }
+                }
+
+                throw new Error(lastError || 'Failed after multiple retries. Please check your connection.');
+            },
+
+            // --- Unified command parser with validation ---
+            parseAndExecuteCommands(aiResponse) {
                 let shouldRestart = false;
-                if (aiResponse.includes('[SET_TRUCKS:')) {
-                    const match = aiResponse.match(/\[SET_TRUCKS:(\d+)\]/);
-                    if (match) {
-                        document.getElementById('cfg-truck-count').value = match[1];
-                        shouldRestart = true;
-                    }
+
+                // SET_TRUCKS
+                const trucksMatch = aiResponse.match(/\[SET_TRUCKS:(\d+)\]/);
+                if (trucksMatch) {
+                    const val = Math.min(100, Math.max(1, parseInt(trucksMatch[1])));
+                    document.getElementById('cfg-truck-count').value = val;
+                    addToSimLog(`AI adjusted Fleet Size to ${val} trucks.`);
                 }
 
-                if (aiResponse.includes('[SET_LOADERS:')) {
-                    const match = aiResponse.match(/\[SET_LOADERS:(\d+)\]/);
-                    if (match) {
-                        document.getElementById('cfg-loader-count').value = match[1];
-                        shouldRestart = true;
-                    }
+                // SET_LOADERS
+                const loadersMatch = aiResponse.match(/\[SET_LOADERS:(\d+)\]/);
+                if (loadersMatch) {
+                    const val = Math.min(20, Math.max(1, parseInt(loadersMatch[1])));
+                    document.getElementById('cfg-loader-count').value = val;
+                    addToSimLog(`AI adjusted Loader Count to ${val} units.`);
                 }
 
-                if (aiResponse.includes('[RUN_SIM]') || shouldRestart) {
+                // SET_HOURS
+                const hoursMatch = aiResponse.match(/\[SET_HOURS:(\d+)\]/);
+                if (hoursMatch) {
+                    const val = Math.min(24, Math.max(1, parseInt(hoursMatch[1])));
+                    document.getElementById('cfg-shift-hours').value = val;
+                    addToSimLog(`AI updated Shift Duration to ${val} hours.`);
+                }
+
+                // RUN_SIM — only runs when explicitly requested
+                if (aiResponse.includes('[RUN_SIM]')) {
                     runSimulation();
                     initRender();
+                    cachedHmLq = document.getElementById('hm-lq');
+                    cachedHmSq = document.getElementById('hm-sq');
                     isPlaying = true;
                     animTime = 0;
                     document.getElementById('btn-play').innerText = 'Pause Simulation';
+                    startAnimLoop();
+                    addToSimLog('Simulation started with current parameters.');
                 }
 
-                // 4. Display AI Text (Cleaning out the bracket commands for the user)
-                const cleanText = aiResponse.replace(/\[.*?\]/g, '');
-                addAiMessage(cleanText);
+                // UPLOAD_IMAGE
+                if (aiResponse.includes('[UPLOAD_IMAGE]')) {
+                    fileInput.click();
+                    addToSimLog('User requested to update truck entity graphics.');
+                }
 
-            } catch (e) {
-                addAiMessage("Connection error. Please check your API key.");
+                // SET_SPEED
+                const speedMatch = aiResponse.match(/\[SET_SPEED:(\d+)\]/);
+                if (speedMatch) {
+                    const val = Math.min(20, Math.max(1, parseInt(speedMatch[1])));
+                    document.getElementById('speed-slider').value = val;
+                    simSpeed = val;
+                    document.getElementById('speed-val-display').innerText = val + 'x';
+                    addToSimLog(`AI adjusted simulation speed to ${val}x.`);
+                }
+
+                // SET_SCALES
+                const scalesMatch = aiResponse.match(/\[SET_SCALES:(\d+)\]/);
+                if (scalesMatch) {
+                    const val = Math.min(10, Math.max(1, parseInt(scalesMatch[1])));
+                    document.getElementById('cfg-scale-count').value = val;
+                    addToSimLog(`AI adjusted Scale Count to ${val}.`);
+                }
+
+                // SET_TRUCK_COST
+                const truckCostMatch = aiResponse.match(/\[SET_TRUCK_COST:(\d+)\]/);
+                if (truckCostMatch) {
+                    document.getElementById('cfg-cost-truck').value = parseInt(truckCostMatch[1]);
+                    addToSimLog(`AI adjusted Truck Cost to $${truckCostMatch[1]}/hr.`);
+                }
+
+                // SET_STATION_COST
+                const stationCostMatch = aiResponse.match(/\[SET_STATION_COST:(\d+)\]/);
+                if (stationCostMatch) {
+                    document.getElementById('cfg-cost-station').value = parseInt(stationCostMatch[1]);
+                    addToSimLog(`AI adjusted Station Cost to $${stationCostMatch[1]}/hr.`);
+                }
+
+                // SET_TRAVEL_SPEED
+                const travelMatch = aiResponse.match(/\[SET_TRAVEL_SPEED:(\d+)\]/);
+                if (travelMatch) {
+                    const val = Math.max(5, parseInt(travelMatch[1]));
+                    document.getElementById('cfg-travel-base').value = val;
+                    addToSimLog(`AI adjusted Travel Speed to ${val} min.`);
+                }
+
+                // SET_LOAD_TIME
+                const loadMatch = aiResponse.match(/\[SET_LOAD_TIME:(\d+)\]/);
+                if (loadMatch) {
+                    const val = Math.max(1, parseInt(loadMatch[1]));
+                    document.getElementById('load-dist-load-avg').value = val;
+                    document.getElementById('load-dist-load-avg').dispatchEvent(new Event('input'));
+                    addToSimLog(`AI adjusted Mean Load Time to ${val} min.`);
+                }
+
+                // SET_SCALE_TIME
+                const scaleTimeMatch = aiResponse.match(/\[SET_SCALE_TIME:(\d+)\]/);
+                if (scaleTimeMatch) {
+                    const val = Math.max(1, parseInt(scaleTimeMatch[1]));
+                    document.getElementById('scale-dist-load-avg').value = val;
+                    document.getElementById('scale-dist-load-avg').dispatchEvent(new Event('input'));
+                    addToSimLog(`AI adjusted Mean Scale Time to ${val} min.`);
+                }
+
+                // SET_LOAD_DIST
+                const loadDistMatch = aiResponse.match(/\[SET_LOAD_DIST:(constant|normal|triangular|uniform)\]/);
+                if (loadDistMatch) {
+                    document.getElementById('load-dist-type').value = loadDistMatch[1];
+                    document.getElementById('load-dist-type').dispatchEvent(new Event('change'));
+                    addToSimLog(`AI changed Load Distribution to ${loadDistMatch[1]}.`);
+                }
+
+                // SET_SCALE_DIST
+                const scaleDistMatch = aiResponse.match(/\[SET_SCALE_DIST:(constant|normal|triangular|uniform)\]/);
+                if (scaleDistMatch) {
+                    document.getElementById('scale-dist-type').value = scaleDistMatch[1];
+                    document.getElementById('scale-dist-type').dispatchEvent(new Event('change'));
+                    addToSimLog(`AI changed Scale Distribution to ${scaleDistMatch[1]}.`);
+                }
+
+                // Keep old ones for backward compatibility
+                const distMatch = aiResponse.match(/\[SET_DISTRIBUTION:(constant|normal|triangular|uniform|fixed|exponential)\]/);
+                if (distMatch) {
+                    let val = distMatch[1];
+                    if (val === 'fixed') val = 'constant';
+                    if (val === 'exponential') val = 'normal';
+                    document.getElementById('load-dist-type').value = val;
+                    document.getElementById('load-dist-type').dispatchEvent(new Event('change'));
+                    document.getElementById('scale-dist-type').value = val;
+                    document.getElementById('scale-dist-type').dispatchEvent(new Event('change'));
+                    addToSimLog(`AI changed Distribution logic to ${val}.`);
+                }
+
+                // Clean bracket commands from display text
+                return aiResponse.replace(/\[.*?\]/g, '').trim();
+            },
+
+            // --- Main chat handler ---
+            async handleChat() {
+                const query = this.input.value.trim();
+                if (!query || this.isSending) return;
+
+                // Enforce cooldown between requests
+                const now = Date.now();
+                const elapsed = now - this.lastRequestTime;
+                if (elapsed < this.MIN_COOLDOWN_MS) {
+                    const waitSec = Math.ceil((this.MIN_COOLDOWN_MS - elapsed) / 1000);
+                    this.addAiMessage(`Please wait ${waitSec}s before sending another message.`);
+                    return;
+                }
+                this.lastRequestTime = now;
+
+                this.isSending = true;
+                this.setInputEnabled(false);
+                this.input.value = '';
+
+                // Show user message
+                this.addUserMessage(query);
+                this.showLoading();
+
+                try {
+                    const aiResponse = await this.callAPI(query);
+                    this.removeLoading();
+
+                    // Parse commands and get clean display text
+                    const cleanText = this.parseAndExecuteCommands(aiResponse);
+                    if (cleanText) {
+                        this.addAiMessage(cleanText);
+                    }
+
+                } catch (e) {
+                    this.removeLoading();
+                    console.error('Chat error:', e);
+                    this.addAiMessage('⚠️ ' + e.message);
+
+                    // Remove the failed user message from history so it doesn't corrupt context
+                    if (this.conversationHistory.length > 0 &&
+                        this.conversationHistory[this.conversationHistory.length - 1].role === 'user') {
+                        this.conversationHistory.pop();
+                    }
+                } finally {
+                    this.isSending = false;
+                    this.abortController = null;
+                    this.setInputEnabled(true);
+                    this.input.focus();
+                }
             }
-        }
+        };
 
-        if (chatInput) {
-            chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleChat(); });
-        }
+        // Initialize chatbot
+        ChatController.init();
+
+        // Expose addAiMessage globally for image upload handler
+        function addAiMessage(text) { ChatController.addAiMessage(text); }
 
         const playBtn = document.getElementById('btn-play');
         playBtn.onclick = () => {
@@ -1252,13 +2270,61 @@
                 // First run or restart after finish/slider reset
                 initRender();
                 runSimulation();
+                cachedHmLq = document.getElementById('hm-lq');
+                cachedHmSq = document.getElementById('hm-sq');
                 isPlaying = true;
                 animTime = 0;
                 playBtn.innerText = 'Pause Simulation';
+                startAnimLoop();
             } else {
                 // Pause / Resume toggle
                 isPlaying = !isPlaying;
                 playBtn.innerText = isPlaying ? 'Pause Simulation' : 'Resume Simulation';
+                if (isPlaying) startAnimLoop();
+            }
+        };
+
+        // Export CSV Event Handler
+        document.getElementById('btn-export-csv').onclick = () => {
+            if (!simHistory || simHistory.length === 0) {
+                alert("Please run a simulation first to populate data.");
+                return;
+            }
+
+            // Build CSV Content
+            let csvStr = "Time_Min,Avg_Wait_Time_Min,Loader_Util_Pct,Scale_Util_Pct,Loader_Queue_Length,Scale_Queue_Length,Cumulative_Cost_USD\n";
+            simHistory.forEach(s => {
+                let wait = s.t > 0 ? (s.stats.waitSum / s.t).toFixed(2) : 0;
+                let utilL = s.t > 0 ? (s.stats.busyLoaders / (runConfig.loaderCount * s.t) * 100).toFixed(1) : 0;
+                let utilS = s.t > 0 ? (s.stats.busyScale / (runConfig.scaleCount * s.t) * 100).toFixed(1) : 0;
+                let cost = (runConfig.hourlyCost * (s.t / 60)).toFixed(2);
+
+                csvStr += `${s.t.toFixed(1)},${wait},${utilL},${utilS},${s.LQ.length},${s.SQ.length},${cost}\n`;
+            });
+
+            // Download mechanism
+            const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `simulation_export_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Heatmap Toggle Event Handler (cached reference)
+        const domHeatmapBtn = document.getElementById('btn-toggle-heatmap');
+        const domSimArea = document.getElementById('sim-area');
+        domHeatmapBtn.onclick = () => {
+            domSimArea.classList.toggle('sim-area-heatmap');
+            const isActive = domSimArea.classList.contains('sim-area-heatmap');
+            if (isActive) {
+                domHeatmapBtn.style.color = 'var(--danger)';
+                domHeatmapBtn.style.borderColor = 'var(--danger)';
+            } else {
+                domHeatmapBtn.style.color = 'var(--text-muted)';
+                domHeatmapBtn.style.borderColor = 'var(--border)';
             }
         };
 
@@ -1284,7 +2350,230 @@
 
         runSimulation();
         initRender();
+        cachedHmLq = document.getElementById('hm-lq');
+        cachedHmSq = document.getElementById('hm-sq');
+        // Start with a single frame render for initial state, but don't loop
         requestAnimationFrame(render);
+
+        // Allow slider scrubbing to trigger render frames when paused
+        domTimeSlider.addEventListener('input', () => {
+            if (!isPlaying) startAnimLoop();
+        });
+
+        // --- Advanced Statistical Analysis Engine ---
+        let chartInstance = null;
+
+        function runHeadlessSimulationMode(simLength, lCount, sCount, tCount, loadConfig, scaleConfig, travelBase, hourlyCost) {
+            let hlLoaders = Array(lCount).fill(null);
+            let hlScale = Array(sCount).fill(null);
+            let truckCountVal = tCount;
+            let hlLQ = [];
+            for (let i = 1; i <= Math.max(1, truckCountVal - sCount); i++) hlLQ.push(i);
+            let hlSQ = [];
+            for (let i = Math.max(1, truckCountVal - sCount) + 1; i <= truckCountVal; i++) hlSQ.push(i);
+
+            let hlEvents = [];
+            function hlAddEvent(t, type, truckId) {
+                // Binary insertion: O(n) instead of O(n·log·n) sort
+                let lo = 0, hi = hlEvents.length;
+                while (lo < hi) {
+                    let mid = (lo + hi) >>> 1;
+                    if (hlEvents[mid].t <= t) lo = mid + 1; else hi = mid;
+                }
+                hlEvents.splice(lo, 0, { t, type, truckId });
+            }
+
+            let simStats = {
+                loaderBusy: 0,
+                scaleBusy: 0,
+                waitTimes: [],
+                truckQStart: {},
+                totalCost: 0
+            };
+
+            hlLQ.forEach(id => simStats.truckQStart[id] = 0);
+            hlSQ.forEach(id => simStats.truckQStart[id] = 0);
+
+            function hlProcessQueues(t) {
+                for (let i = 0; i < lCount; i++) {
+                    if (hlLoaders[i] === null && hlLQ.length > 0) {
+                        let id = hlLQ.shift();
+                        hlLoaders[i] = id;
+                        let wait = Math.max(0, t - simStats.truckQStart[id]);
+                        simStats.waitTimes.push(wait);
+
+                        let dur = getStochasticTime(loadConfig);
+                        simStats.loaderBusy += dur;
+                        hlAddEvent(t + dur, 'EL', id);
+                    }
+                }
+                for (let i = 0; i < sCount; i++) {
+                    if (hlScale[i] === null && hlSQ.length > 0) {
+                        let id = hlSQ.shift();
+                        hlScale[i] = id;
+                        let wait = Math.max(0, t - simStats.truckQStart[id]);
+                        simStats.waitTimes.push(wait);
+
+                        let dur = getStochasticTime(scaleConfig);
+                        simStats.scaleBusy += dur;
+                        hlAddEvent(t + dur, 'ES', id);
+                    }
+                }
+            }
+
+            hlProcessQueues(0);
+            let timeCurrent = 0;
+
+            while (hlEvents.length > 0) {
+                let ev = hlEvents.shift();
+                if (ev.t > simLength) break;
+                timeCurrent = ev.t;
+
+                let id = ev.truckId;
+                if (ev.type === 'EL') {
+                    for (let i = 0; i < lCount; i++) { if (hlLoaders[i] === id) hlLoaders[i] = null; }
+                    simStats.truckQStart[id] = timeCurrent;
+                    hlSQ.push(id);
+                } else if (ev.type === 'ES') {
+                    for (let i = 0; i < sCount; i++) { if (hlScale[i] === id) hlScale[i] = null; }
+                    let dur = travelBase;
+                    hlAddEvent(timeCurrent + dur, 'ET', id);
+                } else if (ev.type === 'ET') {
+                    simStats.truckQStart[id] = timeCurrent;
+                    hlLQ.push(id);
+                }
+                hlProcessQueues(timeCurrent);
+            }
+
+            simStats.totalCost = hourlyCost * (simLength / 60);
+            simStats.loaderUtil = (simStats.loaderBusy / (lCount * simLength)) * 100;
+            simStats.scaleUtil = (simStats.scaleBusy / (sCount * simLength)) * 100;
+
+            return simStats;
+        }
+
+        document.getElementById('btn-run-analytics').onclick = () => {
+            let reps = parseInt(document.getElementById('replications').value) || 30;
+            let btn = document.getElementById('btn-run-analytics');
+            let ogText = btn.innerText;
+            btn.innerText = 'Simulating...';
+            btn.disabled = true;
+
+            // Fetch current config
+            const loaderCount = parseInt(document.getElementById('cfg-loader-count').value) || 1;
+            const scaleCount = parseInt(document.getElementById('cfg-scale-count').value) || 1;
+            const truckCount = parseInt(document.getElementById('cfg-truck-count').value) || 1;
+            const tCost = parseInt(document.getElementById('cfg-cost-truck').value) || 0;
+            const sCost = parseInt(document.getElementById('cfg-cost-station').value) || 0;
+            const hourlyCost = (truckCount * tCost) + ((loaderCount + scaleCount) * sCost);
+
+            const loadConfig = {
+                type: document.getElementById('load-dist-type').value,
+                avg: parseFloat(document.getElementById('load-dist-load-avg').value) || 10,
+                std: parseFloat(document.getElementById('load-dist-stddev').value) || 0,
+                min: parseFloat(document.getElementById('load-dist-min').value) || 0,
+                max: parseFloat(document.getElementById('load-dist-max').value) || 0
+            };
+
+            const scaleConfig = {
+                type: document.getElementById('scale-dist-type').value,
+                avg: parseFloat(document.getElementById('scale-dist-load-avg').value) || 12,
+                std: parseFloat(document.getElementById('scale-dist-stddev').value) || 0,
+                min: parseFloat(document.getElementById('scale-dist-min').value) || 0,
+                max: parseFloat(document.getElementById('scale-dist-max').value) || 0
+            };
+
+            const travelBase = parseFloat(document.getElementById('cfg-travel-base').value);
+
+            setTimeout(() => {
+                let results = [];
+                let allWaits = [];
+                for (let i = 0; i < reps; i++) {
+                    let res = runHeadlessSimulationMode(1440, loaderCount, scaleCount, truckCount, loadConfig, scaleConfig, travelBase, hourlyCost);
+                    results.push(res);
+                    allWaits = allWaits.concat(res.waitTimes);
+                }
+
+                let avgCost = results.reduce((sum, r) => sum + r.totalCost, 0) / reps;
+                let costVar = results.reduce((sum, r) => sum + Math.pow(r.totalCost - avgCost, 2), 0) / (reps - 1 || 1);
+                let costStd = Math.sqrt(costVar);
+                let marginError = 1.96 * (costStd / Math.sqrt(reps));
+                let errorPct = avgCost > 0 ? (marginError / avgCost) * 100 : 0;
+
+                let avgLoaderUtil = results.reduce((sum, r) => sum + r.loaderUtil, 0) / reps;
+                let avgScaleUtil = results.reduce((sum, r) => sum + r.scaleUtil, 0) / reps;
+                let avgWait = allWaits.length > 0 ? allWaits.reduce((sum, w) => sum + w, 0) / allWaits.length : 0;
+
+                document.getElementById('analytics-results').style.display = 'block';
+
+                let bottleneck = 'None';
+                if (avgScaleUtil > 85 && avgScaleUtil > avgLoaderUtil) bottleneck = 'Scale';
+                else if (avgLoaderUtil > 85 && avgLoaderUtil > avgScaleUtil) bottleneck = 'Loader';
+                else if (avgLoaderUtil > 80 || avgScaleUtil > 80) bottleneck = avgLoaderUtil > avgScaleUtil ? 'Loader (Soft)' : 'Scale (Soft)';
+
+                const formatNum = (num) => Math.round(num).toLocaleString('en-US');
+                document.getElementById('res-bottleneck').innerText = bottleneck;
+                document.getElementById('res-cost').innerText = '$' + formatNum(avgCost) + ' ± ' + errorPct.toFixed(1) + '%';
+                document.getElementById('res-wait').innerText = avgWait.toFixed(1) + ' min';
+
+                btn.innerText = ogText;
+                btn.disabled = false;
+
+                renderHistogram(allWaits);
+            }, 50);
+        };
+
+        function renderHistogram(data) {
+            let bins = Array(15).fill(0);
+            let binSize = 5;
+
+            data.forEach(w => {
+                let idx = Math.floor(w / binSize);
+                if (idx >= bins.length) idx = bins.length - 1;
+                bins[idx]++;
+            });
+
+            let labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}m`);
+            labels[labels.length - 1] = `>=${(bins.length - 1) * binSize}m`;
+
+            let ctx = document.getElementById('waitChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Wait Time Frequency',
+                        data: bins,
+                        backgroundColor: 'rgba(56, 189, 248, 0.8)',
+                        borderColor: '#0284c7',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#262626' },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Frequency', color: '#f8fafc' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Wait Time (Minutes)', color: '#f8fafc' }
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 
