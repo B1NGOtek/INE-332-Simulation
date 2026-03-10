@@ -540,6 +540,36 @@
             transform: translateY(0);
         }
 
+        .reset-btn {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 16px rgba(244, 63, 94, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reset-btn:hover {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: rgba(244, 63, 94, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.25);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -997,6 +1027,73 @@
             color: var(--text-main);
             flex: 1;
         }
+
+        /* --- EVENT CALENDAR --- */
+        .event-table-container {
+            max-height: 250px;
+            overflow-y: auto;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .event-table-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .event-table-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .event-table-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .event-table th {
+            padding: 10px 14px;
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--primary);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .event-table td {
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        .event-row {
+            transition: background 0.15s;
+        }
+
+        .event-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .cell-time { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .cell-truck { color: var(--truck-color); font-weight: bold; }
+        .cell-process { color: var(--success); }
+        .cell-dist { color: #a855f7; font-size: 0.75rem;}
+        .cell-val { color: #facc15; font-family: monospace; font-size: 0.85rem; }
     </style>
 </head>
 
@@ -1104,7 +1201,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="display: none;">
             <h3>AI Configuration</h3>
             <div class="input-row" style="margin-bottom: 8px;">
                 <label style="flex-shrink: 0; margin-right: 10px;">Gemini API Key:</label>
@@ -1149,7 +1246,10 @@
     </div>
 
     <div class="controls">
-        <button class="play-btn" id="btn-play">Run Simulation</button>
+        <div style="display: flex; gap: 12px; flex: 1;">
+            <button class="play-btn" id="btn-play" style="flex: 1;">Run Simulation</button>
+            <button class="reset-btn" id="btn-reset" title="Reset Simulation">↺ Reset</button>
+        </div>
         <button class="secondary-btn" id="btn-export-csv" title="Export to CSV"
             aria-label="Export simulation data to CSV">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1179,8 +1279,36 @@
         </div>
     </div>
 
+    <!-- Event Calendar Panel -->
+    <div class="analytics-panel" id="event-calendar-panel" style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="color: #a855f7; margin: 0; font-size: 1.1rem; text-align: left;">🗓️ Event Calendar</h2>
+            <button onclick="clearEventCalendar()"
+                style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;">
+                Clear Calendar
+            </button>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 0 0;">Tracks stochastic time values generated during the simulation sequence.</p>
+        <div class="event-table-container">
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>Time (Min)</th>
+                        <th>Entity</th>
+                        <th>Process</th>
+                        <th>Distribution</th>
+                        <th>Assigned Duration</th>
+                    </tr>
+                </thead>
+                <tbody id="event-calendar-body">
+                    <!-- Events injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Advanced Statistical Analysis -->
-    <div class="analytics-panel">
+    <div class="analytics-panel" style="margin-top: 20px;">
         <h2>Advanced Statistical Analysis (24-Hour Monte Carlo)</h2>
         <div class="analytics-controls">
             <button class="play-btn" id="btn-run-analytics">Run 24h Analysis</button>
@@ -1369,6 +1497,8 @@
         let pathBottom = 320;
         let lSpacing = 65;
         let sSpacing = 65;
+
+        let simEventCalendar = [];
 
         function runSimulation() {
             const loaderCount = parseInt(document.getElementById('cfg-loader-count').value) || 1;
@@ -1579,6 +1709,7 @@
             let scales = Array(scaleCount).fill(null);
             let events = [];
             simHistory = [];
+            simEventCalendar = []; // Reset on new run
 
             function addEv(t, type, obj) {
                 // Binary insertion: O(n) instead of O(n·log·n) sort
@@ -1617,6 +1748,16 @@
                         tr.state = 'L'; tr.resId = i; tr.stateStart = t;
                         let dur = getStochasticTime(loadConfig);
                         tr.stateEnd = t + dur;
+                        
+                        // Push to calendar
+                        simEventCalendar.push({
+                            time: t,
+                            truckId: tr.id,
+                            process: `Loading (LD ${i + 1})`,
+                            distType: loadConfig.type,
+                            duration: dur
+                        });
+
                         addEv(t + dur, 'EL', tr);
                     }
                 }
@@ -1626,6 +1767,16 @@
                         tr.state = 'S'; tr.resId = i; tr.stateStart = t;
                         let dur = getStochasticTime(scaleConfig);
                         tr.stateEnd = t + dur;
+
+                        // Push to calendar
+                        simEventCalendar.push({
+                            time: t,
+                            truckId: tr.id,
+                            process: `Scaling (SC ${i + 1})`,
+                            distType: scaleConfig.type,
+                            duration: dur
+                        });
+
                         addEv(t + dur, 'ES', tr);
                     }
                 }
@@ -1650,6 +1801,8 @@
                 process(ev.t);
                 snap(ev.t);
             }
+
+            renderEventCalendar(); // Populate table after calculating logic
         }
 
         // --- Modified initRender to apply custom image ---
@@ -1854,6 +2007,55 @@
                 logContainer.style.opacity = '1';
             }, 200);
             addToSimLog("User manually cleared the system log history.");
+        }
+
+        function clearEventCalendar() {
+            simEventCalendar = [];
+            const tbody = document.getElementById('event-calendar-body');
+            tbody.innerHTML = '';
+            const msg = document.createElement('tr');
+            msg.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">Calendar cleared. Run simulation to populate.</td>';
+            tbody.appendChild(msg);
+        }
+
+        function renderEventCalendar() {
+            const tbody = document.getElementById('event-calendar-body');
+            tbody.innerHTML = ''; // Full re-render for performance vs appending single rows
+            
+            if (simEventCalendar.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">No events recorded.</td>';
+                tbody.appendChild(tr);
+                return;
+            }
+
+            // Optional: Limit rows if too huge to prevent massive dom lag. Cap at 500 rows.
+            const displayLimit = 500;
+            const toRender = simEventCalendar.slice(0, displayLimit);
+
+            let htmlString = '';
+            for(let i=0; i < toRender.length; i++) {
+                const ev = toRender[i];
+                htmlString += `
+                    <tr class="event-row">
+                        <td class="cell-time">${ev.time.toFixed(2)}</td>
+                        <td class="cell-truck">Truck ${ev.truckId}</td>
+                        <td class="cell-process">${ev.process}</td>
+                        <td class="cell-dist">${ev.distType.toUpperCase()}</td>
+                        <td class="cell-val">${ev.duration.toFixed(3)} min</td>
+                    </tr>
+                `;
+            }
+            
+            if (simEventCalendar.length > displayLimit) {
+                htmlString += `
+                    <tr class="event-row">
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">...and ${simEventCalendar.length - displayLimit} more events...</td>
+                    </tr>
+                `;
+            }
+            
+            tbody.innerHTML = htmlString;
         }
 
         // Inject loading dots CSS
@@ -2282,6 +2484,41 @@ Optimize target: 75-85% loader utilization.`;
                 playBtn.innerText = isPlaying ? 'Pause Simulation' : 'Resume Simulation';
                 if (isPlaying) startAnimLoop();
             }
+        };
+
+        const resetBtn = document.getElementById('btn-reset');
+        resetBtn.onclick = () => {
+            // Stop animation loop if running
+            isPlaying = false;
+            
+            // Re-initialize state
+            animTime = 0;
+            simHistory = [];
+            truckEls = {};
+            
+            // Clear SVGs & UI
+            document.getElementById('anim-path-svg').innerHTML = '';
+            document.getElementById('heatmap-layer').innerHTML = '';
+            document.getElementById('loader-container').innerHTML = '';
+            document.getElementById('scale-container').innerHTML = '';
+            
+            // Reset slider and play button text
+            document.getElementById('time-slider').value = 0;
+            document.getElementById('btn-play').innerText = 'Run Simulation';
+            
+            // Clear advanced charts/results if any
+            document.getElementById('analytics-results').style.display = 'none';
+            
+            // Clear stats
+            document.getElementById('stat-time').innerText = '0.0';
+            document.getElementById('stat-avg-wait').innerText = '0.0';
+            document.getElementById('stat-util').innerText = '0.0%';
+            document.getElementById('stat-total-cost').innerText = '$0';
+            
+            // Clear logs and calendar
+            clearEventCalendar();
+            simLog = [];
+            document.getElementById('sim-log-entries').innerHTML = '<div style="color: var(--warning); opacity: 0.7;">[SYSTEM] Simulation reset by user.</div>';
         };
 
         // Export CSV Event Handler
