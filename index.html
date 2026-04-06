@@ -36,6 +36,46 @@
             --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --panel: rgba(255, 255, 255, 0.85);
+            --panel-solid: #ffffff;
+            --glass: rgba(0, 0, 0, 0.03);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: rgba(148, 163, 184, 0.4);
+            --border-hover: rgba(56, 189, 248, 0.8);
+            --input-bg: rgba(241, 245, 249, 0.8);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+            --primary-glow: rgba(56, 189, 248, 0.3);
+        }
+
+        .theme-toggle-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 1.2rem;
+            z-index: 10000;
+            box-shadow: var(--shadow-md);
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--border-hover);
+            transform: scale(1.05);
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -103,7 +143,7 @@
             border-radius: var(--radius-lg);
             margin-top: 28px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1600px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-md);
             transition: border-color var(--transition);
@@ -148,7 +188,7 @@
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 18px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1600px;
             margin-bottom: 28px;
         }
 
@@ -347,6 +387,9 @@
         .canvas-container {
             position: relative;
             width: 1200px;
+            transform: scale(1.3);
+            transform-origin: top center;
+            margin-bottom: 120px;
             background: #050810;
             border-radius: var(--radius-lg);
             border: 1px solid rgba(30, 41, 59, 0.6);
@@ -1113,6 +1156,112 @@
             font-family: monospace;
             font-size: 0.85rem;
         }
+
+        /* --- QUIZ MODAL --- */
+        .quiz-overlay {
+            position: fixed;
+            bottom: 350px;
+            /* Positioned above the chat widget */
+            right: 25px;
+            display: none;
+            z-index: 10000;
+        }
+
+        .quiz-content {
+            background: var(--panel-solid);
+            border: 2px solid var(--warning);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 360px;
+            /* Match chat widget width */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(245, 158, 11, 0.3);
+            display: flex;
+            flex-direction: column;
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .quiz-content h2 {
+            color: var(--warning);
+            margin-top: 0;
+            font-weight: 800;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 1rem;
+            margin: 14px 0;
+            color: var(--text-main);
+            font-weight: 600;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .quiz-option-btn:hover:not(:disabled) {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: var(--primary);
+        }
+
+        .quiz-option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .quiz-option-btn.correct {
+            background: rgba(45, 212, 191, 0.2) !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
+            opacity: 1 !important;
+        }
+
+        .quiz-option-btn.incorrect {
+            background: rgba(244, 63, 94, 0.2) !important;
+            border-color: var(--danger) !important;
+            color: var(--danger) !important;
+            opacity: 1 !important;
+        }
+
+        .quiz-feedback {
+            min-height: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .quiz-resume-btn {
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+        }
     </style>
 </head>
 
@@ -1121,6 +1270,7 @@
     <input type="file" id="truck-image-upload" accept="image/*" style="display:none">
 
     <div class="header-section">
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Mode">☀️</button>
         <h1>Truck Management Simulator</h1>
         <div class="subtitle">BadNoize23_//
         </div>
@@ -1134,8 +1284,12 @@
                 <input type="number" id="cfg-truck-count" value="1" min="1" max="20">
             </div>
             <div class="input-row">
-                <label>Loaders (Number):</label>
-                <input type="number" id="cfg-loader-count" value="1" min="1" max="10">
+                <label>Travel Speed (min):</label>
+                <input type="number" id="cfg-travel-base" value="60" min="5">
+            </div>
+            <div class="input-row">
+                <label>Shift Duration (hrs):</label>
+                <input type="number" id="cfg-shift-hours" value="8" min="1" max="24">
             </div>
             <div class="input-row">
                 <label>Truck Cost ($/hr):</label>
@@ -1146,16 +1300,12 @@
         <div class="card">
             <h3>Service Stations</h3>
             <div class="input-row">
-                <label>Travel Speed (min):</label>
-                <input type="number" id="cfg-travel-base" value="60" min="5">
+                <label>Loaders (Number):</label>
+                <input type="number" id="cfg-loader-count" value="1" min="1" max="10">
             </div>
             <div class="input-row">
                 <label>Scales (Number):</label>
                 <input type="number" id="cfg-scale-count" value="1" min="1" max="10">
-            </div>
-            <div class="input-row">
-                <label>Shift Duration (hrs):</label>
-                <input type="number" id="cfg-shift-hours" value="8" min="1" max="24">
             </div>
             <div class="input-row">
                 <label>Station Cost ($/hr):</label>
@@ -1179,7 +1329,7 @@
                 <input type="number" id="load-dist-load-avg" value="10">
             </div>
             <div class="input-row" id="load-row-stddev" style="display: none;">
-                <label>Standard Deviation:</label>
+                <label>Std. Deviation:</label>
                 <input type="number" id="load-dist-stddev" value="2" step="0.1">
             </div>
             <div class="input-row" id="load-row-min" style="display: none;">
@@ -1208,7 +1358,7 @@
                 <input type="number" id="scale-dist-load-avg" value="12">
             </div>
             <div class="input-row" id="scale-row-stddev" style="display: none;">
-                <label>Standard Deviation:</label>
+                <label>Std. Deviation:</label>
                 <input type="number" id="scale-dist-stddev" value="2" step="0.1">
             </div>
             <div class="input-row" id="scale-row-min" style="display: none;">
@@ -1266,14 +1416,25 @@
     </div>
 
     <div class="controls">
-        <div style="display: flex; gap: 12px; flex: 1;">
-            <button class="play-btn" id="btn-play" style="flex: 1;">Run Simulation</button>
-            <button class="reset-btn" id="btn-reset" title="Reset Simulation">↺ Reset</button>
+        <div style="display: flex; gap: 12px; flex: 1; min-width: 300px;">
+            <button class="play-btn" id="btn-play" style="flex: 2;">Run Simulation</button>
+            <button class="reset-btn" id="btn-reset" title="Reset Simulation" style="flex: 1;">↺ Reset</button>
         </div>
+        <button class="secondary-btn" id="btn-randomize" title="Randomize Parameters" aria-label="Randomize Parameters"
+            style="border-color: #a855f7; color: #a855f7; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
+            🎲
+        </button>
         <button class="secondary-btn" id="btn-export-csv" title="Export to CSV"
             aria-label="Export simulation data to CSV">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        </button>
+        <button class="secondary-btn" id="btn-toggle-quiz" title="Toggle Random Quiz" aria-label="Toggle Random Quiz"
+            style="color: var(--success); border-color: var(--success);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </button>
         <button class="secondary-btn" id="btn-toggle-heatmap" title="Toggle Congestion Heatmap"
@@ -1309,23 +1470,9 @@
                 Clear Calendar
             </button>
         </div>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 0 0;">Tracks stochastic time values
-            generated during the simulation sequence.</p>
-        <div class="event-table-container">
-            <table class="event-table">
-                <thead>
-                    <tr>
-                        <th>Time (Min)</th>
-                        <th>Entity</th>
-                        <th>Process</th>
-                        <th>Distribution</th>
-                        <th>Assigned Duration</th>
-                    </tr>
-                </thead>
-                <tbody id="event-calendar-body">
-                    <!-- Events injected here -->
-                </tbody>
-            </table>
+        <div class="event-table-container" id="event-table-container"
+            style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+            <!-- Event calendar deeply structured via JS to match configuration variables dynamically -->
         </div>
     </div>
 
@@ -1422,6 +1569,19 @@
         </div>
     </div>
 
+    <!-- Quiz Modal -->
+    <div class="quiz-overlay" id="quiz-modal">
+        <div class="quiz-content">
+            <h2>⚠️ Random Event Quiz ⚠️</h2>
+            <p class="quiz-question" id="quiz-question-text">Question goes here?</p>
+            <div class="quiz-options" id="quiz-options-container">
+                <!-- Options injected here -->
+            </div>
+            <div class="quiz-feedback" id="quiz-feedback-text"></div>
+            <button class="quiz-resume-btn" id="quiz-resume-btn" onclick="resumeFromQuiz()">Resume Simulation</button>
+        </div>
+    </div>
+
     <script>
         // --- New Global for Custom Image ---
         let customTruckImg = null;
@@ -1467,33 +1627,45 @@
 
         function getStochasticTime(config) {
             let type = config.type;
-            let avg = config.avg;
+            let avg = Number(config.avg) || 12;
 
-            if (type === 'fixed' || type === 'constant') return avg;
+            if (type === 'fixed' || type === 'constant') return Math.max(0.1, avg);
 
             if (type === 'normal') {
+                let std = Number(config.std) || 0;
                 let u = 1 - Math.random();
                 let v = Math.random();
                 let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-                return Math.max(0.1, avg + (config.std * z));
+                let val = avg + (std * z);
+                return isNaN(val) ? 0.1 : Math.max(0.1, val);
             }
             if (type === 'uniform') {
-                return config.min + Math.random() * (config.max - config.min);
+                let min = Number(config.min) || 0;
+                let max = Number(config.max) || 0;
+                let mn = Math.min(min, max);
+                let mx = Math.max(min, max);
+                let val = mn + Math.random() * (mx - mn);
+                return isNaN(val) ? 0.1 : Math.max(0.1, val);
             }
             if (type === 'triangular') {
-                let mode = avg;
+                let min_raw = Number(config.min) || 0;
+                let max_raw = Number(config.max) || 0;
+                // Ensures min <= mode <= max mathematically regardless of user inputs
+                let items = [min_raw, max_raw, avg].sort((a, b) => a - b);
+                let min = items[0], mode = items[1], max = items[2];
+
+                if (max === min) return Math.max(0.1, mode);
                 let u = Math.random();
-                let min = config.min;
-                let max = config.max;
-                let F = (max === min) ? 0 : (mode - min) / (max - min);
-                if (max === min) return mode;
+                let F = (mode - min) / (max - min);
+                let res;
                 if (u <= F) {
-                    return min + Math.sqrt(u * (max - min) * (mode - min));
+                    res = min + Math.sqrt(u * (max - min) * (mode - min));
                 } else {
-                    return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+                    res = max - Math.sqrt((1 - u) * (max - min) * (max - mode));
                 }
+                return (isNaN(res) || res <= 0) ? 0.1 : res;
             }
-            return avg;
+            return Math.max(0.1, avg);
         }
 
         // --- Cached DOM Elements to prevent repeated querying ---
@@ -1515,6 +1687,10 @@
         let animLoopRunning = false;
         let cachedHmLq = null, cachedHmSq = null;
 
+        let quizEnabled = true;
+        let quizTriggerTime = -1;
+        let quizAsked = false;
+
         let pathTop = 60;
         let pathBottom = 320;
         let lSpacing = 65;
@@ -1535,6 +1711,9 @@
                 hourlyCost: (truckCount * tCost) + ((loaderCount + scaleCount) * sCost)
             };
             MAX_SIM_TIME = shiftHrs * 60;
+
+            quizTriggerTime = 10 + Math.random() * (MAX_SIM_TIME - 20); // random time between 10m and MAX-10m
+            quizAsked = false;
 
             domTimeSlider.max = MAX_SIM_TIME;
             lastSimIndex = 0; // Reset history index on new run
@@ -1716,9 +1895,8 @@
                 id: i + 1, state: 'LQ', stateStart: 0, stateEnd: 0, resId: -1, totalWait: 0
             }));
 
-            let LQ = trucks.slice(0, Math.max(1, truckCount - scaleCount));
-            let SQ = trucks.slice(Math.max(1, truckCount - scaleCount));
-            SQ.forEach(t => t.state = 'SQ');
+            let LQ = [...trucks];
+            let SQ = [];
 
             // Build Dynamic Heatmap Blobs
             const hmLayer = document.getElementById('heatmap-layer');
@@ -1759,6 +1937,7 @@
                     SQ: SQ.map(tr => tr.id),
                     loaders: loaders.map(l => l ? l.id : null),
                     scales: scales.map(s => s ? s.id : null),
+                    FEL: events.map(e => ({ t: e.t, type: e.type, truckId: e.obj.id })),
                     stats: { busyLoaders: stats.busyLoaders, busyScale: stats.busyScale, waitSum: stats.waitSum, lastT: stats.lastT }
                 });
             }
@@ -1770,15 +1949,7 @@
                         tr.state = 'L'; tr.resId = i; tr.stateStart = t;
                         let dur = getStochasticTime(loadConfig);
                         tr.stateEnd = t + dur;
-
-                        // Push to calendar
-                        simEventCalendar.push({
-                            time: t,
-                            truckId: tr.id,
-                            process: `Loading (LD ${i + 1})`,
-                            distType: loadConfig.type,
-                            duration: dur
-                        });
+                        tr.stateEnd = t + dur;
 
                         addEv(t + dur, 'EL', tr);
                     }
@@ -1789,15 +1960,7 @@
                         tr.state = 'S'; tr.resId = i; tr.stateStart = t;
                         let dur = getStochasticTime(scaleConfig);
                         tr.stateEnd = t + dur;
-
-                        // Push to calendar
-                        simEventCalendar.push({
-                            time: t,
-                            truckId: tr.id,
-                            process: `Scaling (SC ${i + 1})`,
-                            distType: scaleConfig.type,
-                            duration: dur
-                        });
+                        tr.stateEnd = t + dur;
 
                         addEv(t + dur, 'ES', tr);
                     }
@@ -1881,8 +2044,18 @@
                     else break;
                 }
 
-                // Throttle KPI text updates to every 5th frame
-                if (renderFrameCount % 5 === 0) {
+                // Check quiz trigger directly exactly when snapshot is settled
+                if (isPlaying && quizEnabled && !quizAsked && animTime >= quizTriggerTime) {
+                    quizAsked = true;
+                    isPlaying = false; // Pause simulation immediately
+                    animTime = quizTriggerTime; // Snap visual time to exact trigger
+                    domTimeSlider.value = animTime; // Sync UI slider
+                    domBtnPlay.innerText = 'Run Simulation';
+                    triggerQuiz(animTime, s, runConfig);
+                }
+
+                // Throttle KPI text updates to every 5th frame, force map update if paused
+                if (renderFrameCount % 5 === 0 || !isPlaying) {
                     domStatTime.innerText = animTime.toFixed(1) + 'm';
                     let wait = animTime > 0 ? (s.stats.waitSum / animTime) : 0;
                     domStatAvgWait.innerText = wait.toFixed(2);
@@ -1991,6 +2164,92 @@
             modal.style.display = 'flex';
         }
 
+        // --- Quiz Event Logic ---
+        function triggerQuiz(time, currentSnapshot, config) {
+            const questions = [
+                {
+                    text: `At exactly ${time.toFixed(1)}m, how many trucks are currently waiting in the Loading Queue?`,
+                    answer: currentSnapshot.LQ.length
+                },
+                {
+                    text: `At exactly ${time.toFixed(1)}m, how many trucks are currently waiting in the Scale Queue?`,
+                    answer: currentSnapshot.SQ.length
+                },
+                {
+                    text: `At exactly ${time.toFixed(1)}m, how many loaders are currently busy processing trucks?`,
+                    answer: currentSnapshot.loaders.filter(l => l !== null).length
+                },
+                {
+                    text: `At exactly ${time.toFixed(1)}m, how many scales are currently busy weighing trucks?`,
+                    answer: currentSnapshot.scales.filter(s => s !== null).length
+                }
+            ];
+
+            const q = questions[Math.floor(Math.random() * questions.length)];
+
+            document.getElementById('quiz-question-text').innerText = q.text;
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = '';
+            document.getElementById('quiz-feedback-text').innerText = '';
+            document.getElementById('quiz-resume-btn').style.display = 'none';
+
+            let correctAns = q.answer;
+            let options = new Set([correctAns]);
+            let limit = 0;
+            while (options.size < 4 && limit < 50) {
+                let wrong = Math.max(0, correctAns + Math.floor(Math.random() * 5) - 2);
+                if (wrong !== correctAns) options.add(wrong);
+                limit++;
+            }
+            if (options.size < 4) {
+                // Fallback if we loop many times for 0 answer
+                while (options.size < 4) {
+                    options.add(options.size);
+                }
+            }
+
+            let optionsArr = Array.from(options).sort(() => Math.random() - 0.5);
+
+            optionsArr.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'quiz-option-btn';
+                btn.innerText = opt;
+                btn.onclick = function () {
+                    document.querySelectorAll('.quiz-option-btn').forEach(b => b.disabled = true);
+                    if (opt === correctAns) {
+                        btn.classList.add('correct');
+                        document.getElementById('quiz-feedback-text').innerText = 'Correct! Great observation.';
+                        document.getElementById('quiz-feedback-text').style.color = 'var(--success)';
+                    } else {
+                        btn.classList.add('incorrect');
+                        document.getElementById('quiz-feedback-text').innerText = `Incorrect. The correct answer was ${correctAns}.`;
+                        document.getElementById('quiz-feedback-text').style.color = 'var(--danger)';
+
+                        // highlight the correct option as well
+                        document.querySelectorAll('.quiz-option-btn').forEach(b => {
+                            if (parseInt(b.innerText) === correctAns) {
+                                b.classList.add('correct');
+                                b.style.opacity = '1';
+                            }
+                        });
+                    }
+                    document.getElementById('quiz-resume-btn').style.display = 'block';
+                };
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-modal').style.display = 'flex';
+            addToSimLog('Random quiz event triggered! Simulation paused.');
+        }
+
+        function resumeFromQuiz() {
+            document.getElementById('quiz-modal').style.display = 'none';
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause Simulation';
+            addToSimLog('User resolved quiz. Simulation resuming...');
+            startAnimLoop();
+        }
+
         // --- Image Upload Handler ---
         const fileInput = document.getElementById('truck-image-upload');
         fileInput.onchange = (e) => {
@@ -2032,52 +2291,118 @@
         }
 
         function clearEventCalendar() {
-            simEventCalendar = [];
-            const tbody = document.getElementById('event-calendar-body');
-            tbody.innerHTML = '';
-            const msg = document.createElement('tr');
-            msg.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">Calendar cleared. Run simulation to populate.</td>';
-            tbody.appendChild(msg);
+            const container = document.getElementById('event-table-container');
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8rem;">Calendar cleared. Run simulation to populate.</div>';
         }
 
         function renderEventCalendar() {
-            const tbody = document.getElementById('event-calendar-body');
-            tbody.innerHTML = ''; // Full re-render for performance vs appending single rows
+            const container = document.getElementById('event-table-container');
 
-            if (simEventCalendar.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">No events recorded.</td>';
-                tbody.appendChild(tr);
+            if (!simHistory || simHistory.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8rem;">No events recorded.</div>';
                 return;
             }
 
-            // Optional: Limit rows if too huge to prevent massive dom lag. Cap at 500 rows.
+            const loaderCount = runConfig.loaderCount || 1;
+            const scaleCount = runConfig.scaleCount || 1;
+
+            // Generate Dark Theme Header
+            let theadHtml = `
+                <thead>
+                    <tr>
+                        <th style="background: var(--panel-solid); color: var(--text-muted); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Time</th>
+                        <th style="background: var(--panel-solid); color: var(--text-muted); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Load Queue</th>
+            `;
+            for (let i = 0; i < loaderCount; i++) {
+                theadHtml += `<th style="background: var(--panel-solid); color: var(--primary); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Load Process ${i + 1}</th>`;
+            }
+            theadHtml += `<th style="background: var(--panel-solid); color: var(--text-muted); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Scale Queue</th>`;
+            for (let i = 0; i < scaleCount; i++) {
+                theadHtml += `<th style="background: var(--panel-solid); color: var(--success); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Scale Process ${i + 1}</th>`;
+            }
+            theadHtml += `
+                        <th style="background: var(--panel-solid); color: var(--danger); padding: 6px; border: 1px solid var(--border); text-align: center; position: sticky; top: 0; z-index: 2; font-weight: bold;">Event Calendar (EC)</th>
+                    </tr>
+                </thead>
+            `;
+
+            // Group simHistory to get the LAST snapshot for each unique T
+            let uniqueSnapshots = [];
+            for (let i = 0; i < simHistory.length; i++) {
+                if (i === simHistory.length - 1 || simHistory[i + 1].t !== simHistory[i].t) {
+                    uniqueSnapshots.push(simHistory[i]);
+                }
+            }
+
             const displayLimit = 500;
-            const toRender = simEventCalendar.slice(0, displayLimit);
+            const toRender = uniqueSnapshots.slice(0, displayLimit);
 
-            let htmlString = '';
+            let tbodyHtml = '<tbody>';
             for (let i = 0; i < toRender.length; i++) {
-                const ev = toRender[i];
-                htmlString += `
-                    <tr class="event-row">
-                        <td class="cell-time">${ev.time.toFixed(2)}</td>
-                        <td class="cell-truck">Truck ${ev.truckId}</td>
-                        <td class="cell-process">${ev.process}</td>
-                        <td class="cell-dist">${ev.distType.toUpperCase()}</td>
-                        <td class="cell-val">${ev.duration.toFixed(3)} min</td>
+                const s = toRender[i];
+                let isFinal = (s.t >= MAX_SIM_TIME) && (i === toRender.length - 1);
+                let rowBg = (i % 2 === 0) ? 'transparent' : 'rgba(255, 255, 255, 0.02)';
+                let textCol = '#e2e8f0';
+
+                // Queues
+                let lqStr = s.LQ.map(id => `T${id}`).join(', ') || '-';
+                let sqStr = s.SQ.map(id => `T${id}`).join(', ') || '-';
+
+                // Form FEL strings
+                let FEL = (s.FEL || []).map(e => `T${e.truckId}: ${e.type === 'EL' ? 'End Load' : e.type === 'ES' ? 'End Scale' : 'End Travel'} @ ${e.t.toFixed(1)}`);
+                if (FEL.length > 0) {
+                    FEL.push(`-, STOP @ ${MAX_SIM_TIME}`);
+                } else if (s.t >= MAX_SIM_TIME) {
+                    FEL.push(`-, STOP @ ${MAX_SIM_TIME}`);
+                } else {
+                    FEL = ['-'];
+                }
+
+                // Render all FEL items as wrapped inline badges
+                let felHtml = FEL.map(f => `<span style="display:inline-block; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 4px; padding: 2px 6px; margin: 2px; white-space: nowrap; font-size: 0.7rem;">${f}</span>`).join(' ');
+
+                let bgPrimary = isFinal ? 'rgba(244, 63, 94, 0.15)' : rowBg;
+                let colorPrimary = textCol;
+
+                tbodyHtml += `
+                    <tr style="background: ${bgPrimary}; color: ${colorPrimary};">
+                        <td style="padding: 6px 8px; border: 1px solid var(--border); text-align: center; font-weight: 700;">${s.t.toFixed(1)}</td>
+                        <td style="padding: 6px 8px; border: 1px solid var(--border); text-align: center;">${lqStr}</td>
+                `;
+
+                for (let j = 0; j < loaderCount; j++) {
+                    let tid = s.loaders[j];
+                    tbodyHtml += `<td style="padding: 6px 8px; border: 1px solid var(--border); text-align: center; color: ${tid ? 'var(--primary)' : 'inherit'}">${tid ? 'T' + tid : '-'}</td>`;
+                }
+
+                tbodyHtml += `<td style="padding: 6px 8px; border: 1px solid var(--border); text-align: center;">${sqStr}</td>`;
+
+                for (let j = 0; j < scaleCount; j++) {
+                    let tid = s.scales[j];
+                    tbodyHtml += `<td style="padding: 6px 8px; border: 1px solid var(--border); text-align: center; color: ${tid ? 'var(--success)' : 'inherit'}">${tid ? 'T' + tid : '-'}</td>`;
+                }
+
+                tbodyHtml += `
+                        <td style="padding: 4px; border: 1px solid var(--border); text-align: center; color: var(--danger); font-weight: 600;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center;">
+                                ${felHtml}
+                            </div>
+                        </td>
                     </tr>
                 `;
             }
 
-            if (simEventCalendar.length > displayLimit) {
-                htmlString += `
-                    <tr class="event-row">
-                        <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">...and ${simEventCalendar.length - displayLimit} more events...</td>
+            if (uniqueSnapshots.length > displayLimit) {
+                let colSpanTarget = 1 + 1 + loaderCount + 1 + scaleCount + 1;
+                tbodyHtml += `
+                    <tr>
+                        <td colspan="${colSpanTarget}" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 10px;">...and ${uniqueSnapshots.length - displayLimit} more specific events omitted...</td>
                     </tr>
                 `;
             }
 
-            tbody.innerHTML = htmlString;
+            tbodyHtml += '</tbody>';
+            container.innerHTML = `<table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 0.75rem;">${theadHtml}${tbodyHtml}</table>`;
         }
 
         // Inject loading dots CSS
@@ -2516,6 +2841,9 @@ Optimize target: 75-85% loader utilization.`;
             // Re-initialize state
             animTime = 0;
             simHistory = [];
+
+            // Clean up truck DOM elements
+            Object.values(truckEls).forEach(el => el.remove());
             truckEls = {};
 
             // Clear SVGs & UI
@@ -2833,6 +3161,74 @@ Optimize target: 75-85% loader utilization.`;
                 }
             });
         }
+
+        // --- Toggle Quiz Button Handler ---
+        const btnToggleQuiz = document.getElementById('btn-toggle-quiz');
+        if (btnToggleQuiz) {
+            btnToggleQuiz.addEventListener('click', () => {
+                quizEnabled = !quizEnabled;
+                if (quizEnabled) {
+                    btnToggleQuiz.style.color = 'var(--success)';
+                    btnToggleQuiz.style.borderColor = 'var(--success)';
+                    addToSimLog("Random Quiz Event feature enabled.");
+                } else {
+                    btnToggleQuiz.style.color = 'var(--text-muted)';
+                    btnToggleQuiz.style.borderColor = 'var(--border)';
+                    addToSimLog("Random Quiz Event feature disabled.");
+                }
+            });
+        }
+
+        // --- Randomize Inputs Logic ---
+        document.getElementById('btn-randomize').addEventListener('click', () => {
+            const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+            const dists = ['constant', 'normal', 'triangular', 'uniform'];
+
+            document.getElementById('cfg-truck-count').value = rInt(2, 10);
+            document.getElementById('cfg-loader-count').value = rInt(1, 5);
+            document.getElementById('cfg-scale-count').value = rInt(1, 4);
+            document.getElementById('cfg-shift-hours').value = rInt(4, 12);
+            document.getElementById('cfg-travel-base').value = rInt(20, 90);
+
+            // Loading Randomization
+            document.getElementById('load-dist-type').value = dists[rInt(0, 3)];
+            document.getElementById('load-dist-load-avg').value = rInt(5, 20);
+            document.getElementById('load-dist-min').value = rInt(1, 5);
+            document.getElementById('load-dist-max').value = rInt(22, 40);
+            document.getElementById('load-dist-stddev').value = parseFloat((Math.random() * 3 + 0.5).toFixed(1));
+            document.getElementById('load-dist-type').dispatchEvent(new Event('change'));
+
+            // Scaling Randomization
+            document.getElementById('scale-dist-type').value = dists[rInt(0, 3)];
+            document.getElementById('scale-dist-load-avg').value = rInt(5, 20);
+            document.getElementById('scale-dist-min').value = rInt(1, 5);
+            document.getElementById('scale-dist-max').value = rInt(22, 40);
+            document.getElementById('scale-dist-stddev').value = parseFloat((Math.random() * 3 + 0.5).toFixed(1));
+            document.getElementById('scale-dist-type').dispatchEvent(new Event('change'));
+
+            addToSimLog("System parameters randomized for testing.");
+        });
+
+        // Theme Toggle Logic
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                document.body.removeAttribute('data-theme');
+                document.getElementById('theme-toggle').innerText = '☀️';
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                document.getElementById('theme-toggle').innerText = '🌙';
+            }
+            // Update charts colors dynamically if needed based on CSS variables
+            if(window.statChart) {
+                // To apply the correct new label text color variables
+                const textColor = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#ffffff';
+                window.statChart.options.plugins.legend.labels.color = textColor;
+                window.statChart.options.scales.x.ticks.color = textColor;
+                window.statChart.options.scales.y.ticks.color = textColor;
+                window.statChart.update();
+            }
+        });
     </script>
 </body>
 
